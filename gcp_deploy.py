@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 """
-Simple GCP Deployment Script for FixItFred
-Deploys the application to Google Cloud Run
+Enhanced GCP Deployment Script for FixItFred
+Deploys the application to Google Cloud Run with full GCP integration
 """
 
 import subprocess
 import sys
 import os
+import yaml
+import json
 
 def run_command(command):
     """Runs a command and prints its output in real-time."""
@@ -30,17 +32,44 @@ def run_command(command):
         print(f"An exception occurred: {e}")
         sys.exit(1)
 
+def load_config():
+    """Load configuration from gcp-config.yaml"""
+    try:
+        with open('gcp-config.yaml', 'r') as f:
+            config = yaml.safe_load(f)
+        return config
+    except FileNotFoundError:
+        print("❌ gcp-config.yaml not found. Using default configuration.")
+        return {
+            'project': {'id': 'fredfix', 'region': 'us-central1'},
+            'services': {'cloud_run': {'service_name': 'fixitfred'}}
+        }
+
+def setup_secrets():
+    """Set up Secret Manager secrets"""
+    print("🔐 Setting up Secret Manager...")
+    
+    # Check if .env file exists and prompt for secrets
+    if os.path.exists('.env'):
+        print("📝 Found .env file - secrets should be configured manually in Secret Manager")
+    else:
+        print("⚠️  No .env file found. Please configure secrets manually in GCP Secret Manager")
+
 def main():
-    """Deploy FixItFred to Google Cloud Run"""
+    """Deploy FixItFred to Google Cloud Run with full GCP integration"""
 
     print("🚀 Deploying FixItFred to Google Cloud Run")
     print("="*50)
 
-    # Configuration
-    project_id = "fredfix"
-    region = "us-central1"
-    service_name = "fixitfred"
+    # Load configuration
+    config = load_config()
+    project_id = config['project']['id']
+    region = config['project']['region']
+    service_name = config['services']['cloud_run']['service_name']
     image_name = f"gcr.io/{project_id}/{service_name}"
+    
+    # Setup secrets
+    setup_secrets()
 
     # 1. Configure Docker
     print("📦 Configuring Docker for GCR...")

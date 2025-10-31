@@ -1,0 +1,48 @@
+# Google Cloud Platform Configuration for FixItFred
+project:
+  id: fredfix
+  region: us-central1
+  zone: us-central1-a
+
+services:
+  cloud_run:
+    service_name: fixitfred
+    region: us-central1
+    memory: 1Gi
+    cpu: 1
+    port: 8000
+    min_instances: 0
+    max_instances: 10
+    
+  container_registry:
+    hostname: gcr.io
+    
+  cloud_sql:
+    instance_name: fixitfred-db
+    database_version: POSTGRES_14
+    tier: db-f1-micro
+    region: us-central1
+    
+  cloud_storage:
+    bucket_name: fixitfred-storage
+    location: us-central1
+    
+  secret_manager:
+    secrets:
+      - openai-api-key
+      - anthropic-api-key
+      - gemini-api-key
+      - jwt-secret-key
+      - database-url
+
+monitoring:
+  logging: true
+  metrics: true
+  alerts: true
+
+security:
+  iam_roles:
+    - roles/run.invoker
+    - roles/cloudsql.client
+    - roles/storage.objectAdmin
+    - roles/secretmanager.secretAccessor
