@@ -1,0 +1,40 @@
+# FixItFred Universal AI Business Platform
+# Core Dependencies
+
+# Web Framework & Security
+fastapi>=0.100.0
+uvicorn>=0.23.0
+pyjwt>=2.8.0
+cryptography>=41.0.0
+jinja2>=3.1.0
+
+# Data Processing
+PyYAML>=6.0.0
+
+# Identity & Authentication
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# Audio Processing (Voice Commands)
+speechrecognition>=3.10.0
+pyttsx3>=2.90
+
+# Development Tools
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
+
+# System Integration
+psutil>=5.9.0
+schedule>=1.2.0
+
+# AI & Language Processing
+openai>=1.30.0
+python-dotenv>=1.0.0
+
+# Optional Cloud Providers
+# boto3>=1.28.0  # AWS
+google-cloud-storage>=2.10.0
+google-cloud-run>=0.5.0
+google-cloud>=0.34.0  # GCP
+# azure-sdk>=1.0.0  # Azure

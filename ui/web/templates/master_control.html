@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixItFred Master Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div x-data="masterControl()">
+        <!-- Header -->
+        <header class="bg-black border-b border-purple-500">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-3xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+                            🤖 FixItFred Master Control
+                        </h1>
+                        <span class="text-green-400 text-sm">● ONLINE</span>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">Total Revenue</div>
+                            <div class="text-2xl font-bold text-green-400">$<span x-text="formatNumber(totalRevenue)"></span></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">Companies Deployed</div>
+                            <div class="text-2xl font-bold text-blue-400" x-text="totalDeployments"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <div class="container mx-auto px-4 py-6">
+            <!-- Quick Deploy Section -->
+            <div class="bg-gray-800 rounded-lg p-6 mb-6 border border-purple-500">
+                <h2 class="text-xl font-bold mb-4 text-purple-400">🚀 Quick Deploy</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <input type="text" x-model="newDeployment.company" 
+                               class="w-full p-3 bg-gray-700 rounded text-white" 
+                               placeholder="Company Name">
+                    </div>
+                    <div>
+                        <input type="number" x-model="newDeployment.workers" 
+                               class="w-full p-3 bg-gray-700 rounded text-white" 
+                               placeholder="Number of Workers">
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h3 class="text-sm font-semibold mb-2 text-gray-400">Select Modules:</h3>
+                    <div class="flex flex-wrap gap-2">
+                        <template x-for="module in availableModules" :key="module">
+                            <button @click="toggleModule(module)"
+                                    :class="newDeployment.modules.includes(module) ? 'bg-purple-600' : 'bg-gray-700'"
+                                    class="px-4 py-2 rounded hover:bg-purple-500 transition">
+                                <span x-text="module"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex items-center space-x-4">
+                    <button @click="deployCompany()" 
+                            class="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg font-bold hover:from-purple-600 hover:to-pink-600 transition">
+                        Deploy in 47 Seconds
+                    </button>
+                    <div x-show="deploying" class="text-yellow-400">
+                        <span class="animate-pulse">⚡ Deploying...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="text-xs text-gray-400 mb-1">Today's Deployments</div>
+                    <div class="text-3xl font-bold text-blue-400" x-text="todayDeployments"></div>
+                    <div class="text-xs text-green-400 mt-1">↑ 23% from yesterday</div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="text-xs text-gray-400 mb-1">Active Workers</div>
+                    <div class="text-3xl font-bold text-purple-400" x-text="formatNumber(totalWorkers)"></div>
+                    <div class="text-xs text-gray-500 mt-1">Across all companies</div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="text-xs text-gray-400 mb-1">Monthly Recurring</div>
+                    <div class="text-3xl font-bold text-green-400">$<span x-text="formatNumber(monthlyRevenue)"></span></div>
+                    <div class="text-xs text-gray-500 mt-1">MRR</div>
+                </div>
+                <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+                    <div class="text-xs text-gray-400 mb-1">Avg Deploy Time</div>
+                    <div class="text-3xl font-bold text-yellow-400">9.2s</div>
+                    <div class="text-xs text-gray-500 mt-1">Last 100 deploys</div>
+                </div>
+            </div>
+
+            <!-- Recent Deployments & Chat with Fred -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Recent Deployments -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-lg font-bold mb-4 text-blue-400">🏢 Recent Deployments</h3>
+                    <div class="space-y-3 max-h-96 overflow-y-auto">
+                        <template x-for="deployment in recentDeployments" :key="deployment.id">
+                            <div class="bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition cursor-pointer">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-semibold" x-text="deployment.company"></div>
+                                        <div class="text-xs text-gray-400">
+                                            <span x-text="deployment.workers"></span> workers • 
+                                            <span x-text="deployment.modules.join(', ')"></span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-green-400 font-bold">$<span x-text="formatNumber(deployment.revenue)"></span></div>
+                                        <div class="text-xs text-gray-500" x-text="deployment.time"></div>
+                                    </div>
+                                </div>
+                                <div class="mt-2">
+                                    <div class="text-xs text-purple-400" x-text="deployment.domain"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Chat with Fred - Expert Assistant -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-lg font-bold mb-4 text-purple-400">🤖 Fred - Platform Expert Assistant</h3>
+                    <div class="bg-gray-900 rounded-lg p-4 h-64 overflow-y-auto mb-4" id="chatMessages">
+                        <template x-for="message in chatMessages" :key="message.id">
+                            <div class="mb-3">
+                                <div class="text-xs" :class="message.sender === 'you' ? 'text-blue-400' : 'text-purple-400'">
+                                    <span x-text="message.sender === 'you' ? 'You' : '🤖 Fred'"></span>
+                                </div>
+                                <div class="mt-1" :class="message.sender === 'you' ? 'text-gray-300' : 'text-white'">
+                                    <span x-html="message.text"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="text" x-model="chatInput" @keyup.enter="sendToFred()"
+                               class="flex-1 p-2 bg-gray-700 rounded text-white" 
+                               placeholder="Ask Fred anything about FixItFred... (deployments, troubleshooting, features)">
+                        <button @click="sendToFred()" 
+                                class="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700">
+                            Send
+                        </button>
+                    </div>
+                    <div class="mt-3 flex flex-wrap gap-2">
+                        <button @click="quickCommand('Test complete platform end-to-end')" 
+                                class="text-xs px-3 py-1 bg-green-700 rounded hover:bg-green-600">
+                            🔧 Test Platform
+                        </button>
+                        <button @click="quickCommand('Show revenue report')" 
+                                class="text-xs px-3 py-1 bg-gray-700 rounded hover:bg-gray-600">
+                            💰 Revenue Report
+                        </button>
+                        <button @click="quickCommand('Deploy for Amazon with 2000 workers')" 
+                                class="text-xs px-3 py-1 bg-blue-700 rounded hover:bg-blue-600">
+                            🚀 Quick Deploy
+                        </button>
+                        <button @click="quickCommand('Troubleshoot worker issues')" 
+                                class="text-xs px-3 py-1 bg-red-700 rounded hover:bg-red-600">
+                            🔍 Troubleshoot
+                        </button>
+                        <button @click="quickCommand('Show platform architecture')" 
+                                class="text-xs px-3 py-1 bg-purple-700 rounded hover:bg-purple-600">
+                            🏗️ Architecture
+                        </button>
+                        <button @click="quickCommand('How to scale to 200k companies')" 
+                                class="text-xs px-3 py-1 bg-orange-700 rounded hover:bg-orange-600">
+                            📈 Scale Guide
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="mt-6 bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-lg font-bold mb-4 text-green-400">📈 Revenue Growth</h3>
+                <canvas id="revenueChart" width="400" height="100"></canvas>
+            </div>
+
+            <!-- Projected Growth -->
+            <div class="mt-6 bg-gradient-to-r from-purple-900 to-pink-900 rounded-lg p-6 border border-purple-500">
+                <h3 class="text-xl font-bold mb-4">🚀 Projected Growth at Scale</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <div class="text-3xl font-bold">1,000</div>
+                        <div class="text-sm text-gray-300">Companies</div>
+                        <div class="text-2xl text-green-400 mt-1">$63M</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold">10,000</div>
+                        <div class="text-sm text-gray-300">Companies</div>
+                        <div class="text-2xl text-green-400 mt-1">$632M</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold">50,000</div>
+                        <div class="text-sm text-gray-300">Companies</div>
+                        <div class="text-2xl text-green-400 mt-1">$3.16B</div>
+                    </div>
+                    <div>
+                        <div class="text-3xl font-bold">200,000</div>
+                        <div class="text-sm text-gray-300">Companies</div>
+                        <div class="text-2xl text-green-400 mt-1">$12.6B</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function masterControl() {
+            return {
+                // Stats
+                totalDeployments: 5,
+                todayDeployments: 5,
+                totalWorkers: 2650,
+                totalRevenue: 316000,
+                monthlyRevenue: 26333,
+                
+                // New deployment form
+                newDeployment: {
+                    company: '',
+                    workers: 50,
+                    modules: ['quality', 'maintenance']
+                },
+                
+                availableModules: ['quality', 'maintenance', 'safety', 'operations', 'analytics', 'compliance'],
+                deploying: false,
+                
+                // Recent deployments
+                recentDeployments: [
+                    {
+                        id: 1,
+                        company: 'Boeing Manufacturing',
+                        workers: 500,
+                        modules: ['quality', 'maintenance', 'safety'],
+                        revenue: 61000,
+                        time: '2 min ago',
+                        domain: 'boeing-manufacturing.fixitfred.ai'
+                    },
+                    {
+                        id: 2,
+                        company: 'Tesla Gigafactory',
+                        workers: 1000,
+                        modules: ['quality', 'operations', 'analytics'],
+                        revenue: 111000,
+                        time: '5 min ago',
+                        domain: 'tesla-gigafactory.fixitfred.ai'
+                    },
+                    {
+                        id: 3,
+                        company: 'Ford Assembly Plant',
+                        workers: 750,
+                        modules: ['quality', 'maintenance', 'operations'],
+                        revenue: 86000,
+                        time: '8 min ago',
+                        domain: 'ford-assembly-plant.fixitfred.ai'
+                    }
+                ],
+                
+                // Chat messages
+                chatMessages: [
+                    {
+                        id: 1,
+                        sender: 'fred',
+                        text: "Hi! I'm Fred, your FixItFred platform expert. I know everything about deployments, troubleshooting, architecture, and scaling to 200,000+ companies. <br><br><strong>What I can help with:</strong><br>🚀 Deploy to any company in 47 seconds<br>🔧 Troubleshoot platform issues<br>📊 Analyze performance & revenue<br>🏗️ Explain architecture & scaling<br>👷 Manage workers & modules<br><br>Ask me anything!"
+                    }
+                ],
+                chatInput: '',
+                
+                toggleModule(module) {
+                    const index = this.newDeployment.modules.indexOf(module);
+                    if (index > -1) {
+                        this.newDeployment.modules.splice(index, 1);
+                    } else {
+                        this.newDeployment.modules.push(module);
+                    }
+                },
+                
+                async deployCompany() {
+                    if (!this.newDeployment.company) {
+                        alert('Please enter a company name');
+                        return;
+                    }
+                    
+                    this.deploying = true;
+                    
+                    // Simulate deployment
+                    setTimeout(() => {
+                        const revenue = 5000 + (this.newDeployment.modules.length * 2000) + (this.newDeployment.workers * 100);
+                        
+                        this.recentDeployments.unshift({
+                            id: Date.now(),
+                            company: this.newDeployment.company,
+                            workers: this.newDeployment.workers,
+                            modules: [...this.newDeployment.modules],
+                            revenue: revenue,
+                            time: 'just now',
+                            domain: `${this.newDeployment.company.toLowerCase().replace(/\s+/g, '-')}.fixitfred.ai`
+                        });
+                        
+                        this.totalDeployments++;
+                        this.todayDeployments++;
+                        this.totalWorkers += parseInt(this.newDeployment.workers);
+                        this.totalRevenue += revenue;
+                        this.monthlyRevenue = Math.round(this.totalRevenue / 12);
+                        
+                        this.deploying = false;
+                        
+                        // Add success message to chat
+                        this.chatMessages.push({
+                            id: Date.now(),
+                            sender: 'fred',
+                            text: `✅ Deployed for ${this.newDeployment.company}! ${this.newDeployment.workers} workers, ${this.newDeployment.modules.length} modules. Revenue: $${this.formatNumber(revenue)}`
+                        });
+                        
+                        // Clear form
+                        this.newDeployment.company = '';
+                        this.newDeployment.workers = 50;
+                        
+                        this.updateChart();
+                    }, 3000);
+                },
+                
+                sendToFred() {
+                    if (!this.chatInput.trim()) return;
+                    
+                    this.chatMessages.push({
+                        id: Date.now(),
+                        sender: 'you',
+                        text: this.chatInput
+                    });
+                    
+                    const command = this.chatInput.toLowerCase();
+                    this.chatInput = '';
+                    
+                    // Simulate Fred's responses
+                    setTimeout(() => {
+                        let response = '';
+                        
+                        if (command.includes('revenue')) {
+                            response = `💰 Total Revenue: $${this.formatNumber(this.totalRevenue)} | Monthly: $${this.formatNumber(this.monthlyRevenue)} | Projected (200K companies): $12.6B`;
+                        } else if (command.includes('deploy')) {
+                            response = "I'll deploy that for you! Use the Quick Deploy form above or give me more details.";
+                        } else if (command.includes('how many')) {
+                            response = `📊 ${this.todayDeployments} deployments today, ${this.totalDeployments} total. ${this.totalWorkers} workers deployed!`;
+                        } else {
+                            response = "I can help you deploy to companies, track revenue, and manage your empire. Try: 'Show revenue report' or 'Deploy for [Company]'";
+                        }
+                        
+                        this.chatMessages.push({
+                            id: Date.now(),
+                            sender: 'fred',
+                            text: response
+                        });
+                        
+                        // Auto-scroll chat
+                        this.$nextTick(() => {
+                            const chatDiv = document.getElementById('chatMessages');
+                            chatDiv.scrollTop = chatDiv.scrollHeight;
+                        });
+                    }, 1000);
+                },
+                
+                quickCommand(command) {
+                    this.chatInput = command;
+                    this.sendToFred();
+                },
+                
+                formatNumber(num) {
+                    return new Intl.NumberFormat('en-US').format(num);
+                },
+                
+                updateChart() {
+                    // Update revenue chart when new deployment added
+                    // Chart implementation would go here
+                },
+                
+                init() {
+                    // Initialize revenue chart
+                    const ctx = document.getElementById('revenueChart').getContext('2d');
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Today'],
+                            datasets: [{
+                                label: 'Revenue',
+                                data: [50000, 125000, 189000, 245000, 280000, 316000],
+                                borderColor: 'rgb(134, 239, 172)',
+                                backgroundColor: 'rgba(134, 239, 172, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    ticks: {
+                                        callback: function(value) {
+                                            return '$' + value.toLocaleString();
+                                        },
+                                        color: '#9CA3AF'
+                                    },
+                                    grid: {
+                                        color: '#374151'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#9CA3AF'
+                                    },
+                                    grid: {
+                                        color: '#374151'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

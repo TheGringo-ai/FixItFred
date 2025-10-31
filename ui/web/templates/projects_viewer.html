@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects Viewer - FixItFred Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-900 text-white" x-data="projectsViewer()">
+    
+    <!-- Include Navigation -->
+    <div x-data="navigation()">
+        <!-- Navigation Bar -->
+        <nav class="bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 border-b border-purple-500 sticky top-0 z-50">
+            <div class="container mx-auto px-4">
+                <div class="flex items-center justify-between h-16">
+                    
+                    <!-- Logo and Platform Name -->
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                                <span class="text-lg font-bold text-indigo-600">F</span>
+                            </div>
+                            <div>
+                                <h1 class="text-lg font-bold text-white">FixItFred</h1>
+                                <p class="text-xs text-purple-200">AI Business OS</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Current Dashboard Indicator -->
+                        <div class="px-3 py-1 bg-yellow-600 rounded-full">
+                            <span class="text-xs text-yellow-100 font-semibold">Projects</span>
+                        </div>
+                    </div>
+
+                    <!-- Main Navigation -->
+                    <div class="hidden md:flex items-center space-x-1">
+                        
+                        <!-- Professional Dashboard -->
+                        <a href="/professional" class="nav-link group relative">
+                            <div class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-purple-700">
+                                <span class="text-xl">🏢</span>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">Professional</div>
+                                    <div class="text-xs text-purple-200">Client Deployments</div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Master Control -->
+                        <a href="http://localhost:9000" target="_blank" class="nav-link group relative">
+                            <div class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-purple-700">
+                                <span class="text-xl">🚀</span>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">Master Control</div>
+                                    <div class="text-xs text-purple-200">Empire Management</div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Technical Dashboard -->
+                        <a href="/" class="nav-link group relative">
+                            <div class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-purple-700">
+                                <span class="text-xl">⚙️</span>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">Technical</div>
+                                    <div class="text-xs text-purple-200">Dev Tools</div>
+                                </div>
+                            </div>
+                        </a>
+
+                        <!-- Projects Viewer - ACTIVE -->
+                        <a href="/projects" class="nav-link group relative active">
+                            <div class="flex items-center space-x-2 px-4 py-2 rounded-lg bg-purple-700">
+                                <span class="text-xl">📊</span>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">Projects</div>
+                                    <div class="text-xs text-purple-200">View & Manage</div>
+                                </div>
+                            </div>
+                            <div class="absolute bottom-0 left-0 w-full h-0.5 bg-yellow-400"></div>
+                        </a>
+
+                        <!-- AI Chat -->
+                        <a href="/chat" class="nav-link group relative">
+                            <div class="flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-purple-700">
+                                <span class="text-xl">🤖</span>
+                                <div class="text-left">
+                                    <div class="text-sm font-semibold text-white">AI Chat</div>
+                                    <div class="text-xs text-purple-200">Ask Fred</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+
+                    <!-- Status and Quick Actions -->
+                    <div class="flex items-center space-x-4">
+                        <div class="hidden lg:flex items-center space-x-4 text-xs">
+                            <div class="text-center">
+                                <div class="text-green-400 font-bold" x-text="projects.length"></div>
+                                <div class="text-purple-200">Projects</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-blue-400 font-bold" x-text="formatCurrency(totalRevenue)"></div>
+                                <div class="text-purple-200">Revenue</div>
+                            </div>
+                        </div>
+
+                        <!-- Refresh Button -->
+                        <button @click="refreshProjects()" 
+                                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg text-white font-semibold hover:from-blue-600 hover:to-cyan-600 transition-all duration-200">
+                            <span class="flex items-center space-x-2">
+                                <span>🔄</span>
+                                <span class="hidden sm:inline">Refresh</span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto px-6 py-8">
+        
+        <!-- Header Section -->
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold mb-4">📊 Projects Dashboard</h1>
+            <p class="text-gray-400 text-lg">View and manage all your FixItFred deployments</p>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Projects</p>
+                        <p class="text-3xl font-bold text-blue-400" x-text="projects.length"></p>
+                    </div>
+                    <div class="text-blue-400 text-3xl">📈</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Active Deployments</p>
+                        <p class="text-3xl font-bold text-green-400" x-text="activeProjects"></p>
+                    </div>
+                    <div class="text-green-400 text-3xl">🟢</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Revenue</p>
+                        <p class="text-3xl font-bold text-yellow-400">$<span x-text="formatCurrency(totalRevenue)"></span></p>
+                    </div>
+                    <div class="text-yellow-400 text-3xl">💰</div>
+                </div>
+            </div>
+            
+            <div class="bg-gray-800 rounded-xl p-6 border border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-400 text-sm">Total Workers</p>
+                        <p class="text-3xl font-bold text-purple-400" x-text="totalWorkers.toLocaleString()"></p>
+                    </div>
+                    <div class="text-purple-400 text-3xl">👥</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters and Search -->
+        <div class="bg-gray-800 rounded-xl p-6 mb-8 border border-gray-700">
+            <div class="flex flex-wrap items-center gap-4">
+                <div class="flex-1 min-w-64">
+                    <input type="text" x-model="searchQuery" @input="filterProjects()"
+                           placeholder="Search projects..." 
+                           class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500">
+                </div>
+                
+                <select x-model="filterStatus" @change="filterProjects()"
+                        class="p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="deploying">Deploying</option>
+                    <option value="maintenance">Maintenance</option>
+                </select>
+                
+                <select x-model="filterIndustry" @change="filterProjects()"
+                        class="p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:ring-2 focus:ring-blue-500">
+                    <option value="">All Industries</option>
+                    <option value="manufacturing">Manufacturing</option>
+                    <option value="healthcare">Healthcare</option>
+                    <option value="logistics">Logistics</option>
+                    <option value="enterprise">Enterprise</option>
+                </select>
+                
+                <button @click="resetFilters()" 
+                        class="px-4 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg text-white transition">
+                    Clear Filters
+                </button>
+            </div>
+        </div>
+
+        <!-- Projects Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+            <template x-for="project in filteredProjects" :key="project.id">
+                <div class="bg-gray-800 rounded-xl border border-gray-700 hover:border-purple-500 transition-all duration-300 cursor-pointer"
+                     @click="viewProject(project)">
+                    
+                    <!-- Project Header -->
+                    <div class="p-6 border-b border-gray-700">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold text-white mb-2" x-text="project.company_name"></h3>
+                                <div class="flex items-center space-x-2 mb-3">
+                                    <span class="text-2xl" x-text="project.icon"></span>
+                                    <span class="text-gray-400 text-sm" x-text="project.industry"></span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <div class="px-2 py-1 rounded-full text-xs font-semibold"
+                                         :class="project.status === 'active' ? 'bg-green-900 text-green-300' : 
+                                                project.status === 'deploying' ? 'bg-yellow-900 text-yellow-300' : 
+                                                'bg-gray-900 text-gray-300'">
+                                        <span x-text="project.status"></span>
+                                    </div>
+                                    <span class="text-xs text-gray-500" x-text="project.created_date"></span>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-green-400">$<span x-text="formatCurrency(project.revenue)"></span></div>
+                                <div class="text-xs text-gray-400">Annual Revenue</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Project Details -->
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <div class="text-xs text-gray-400">Workers</div>
+                                <div class="text-lg font-semibold text-blue-400" x-text="project.worker_count.toLocaleString()"></div>
+                            </div>
+                            <div>
+                                <div class="text-xs text-gray-400">Modules</div>
+                                <div class="text-lg font-semibold text-purple-400" x-text="project.modules.length"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Modules List -->
+                        <div class="mb-4">
+                            <div class="text-xs text-gray-400 mb-2">Active Modules:</div>
+                            <div class="flex flex-wrap gap-1">
+                                <template x-for="module in project.modules.slice(0, 4)" :key="module">
+                                    <span class="px-2 py-1 bg-gray-700 rounded text-xs text-gray-300" x-text="module"></span>
+                                </template>
+                                <span x-show="project.modules.length > 4" 
+                                      class="px-2 py-1 bg-gray-600 rounded text-xs text-gray-400"
+                                      x-text="'+' + (project.modules.length - 4) + ' more'"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="flex gap-2">
+                            <button @click.stop="openProject(project)" 
+                                    class="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-white text-sm transition">
+                                Open Dashboard
+                            </button>
+                            <button @click.stop="editProject(project)" 
+                                    class="px-3 py-2 bg-gray-600 hover:bg-gray-500 rounded-lg text-white text-sm transition">
+                                ⚙️
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="filteredProjects.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">📝</div>
+            <h3 class="text-2xl font-bold text-gray-400 mb-2">No Projects Found</h3>
+            <p class="text-gray-500 mb-6">Get started by deploying your first project</p>
+            <a href="/professional" 
+               class="inline-block px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition">
+                Deploy New Project
+            </a>
+        </div>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div x-show="selectedProject" x-transition class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-gray-800 rounded-xl max-w-4xl mx-4 max-h-[90vh] overflow-y-auto border border-purple-500">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-gray-700">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white" x-text="selectedProject?.company_name"></h2>
+                        <p class="text-gray-400" x-text="selectedProject?.industry + ' • ' + selectedProject?.status"></p>
+                    </div>
+                    <button @click="selectedProject = null" class="text-gray-400 hover:text-white">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6" x-show="selectedProject">
+                <!-- Project Stats -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <div class="text-xs text-gray-400">Workers</div>
+                        <div class="text-2xl font-bold text-blue-400" x-text="selectedProject?.worker_count?.toLocaleString()"></div>
+                    </div>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <div class="text-xs text-gray-400">Revenue</div>
+                        <div class="text-2xl font-bold text-green-400">$<span x-text="formatCurrency(selectedProject?.revenue || 0)"></span></div>
+                    </div>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <div class="text-xs text-gray-400">Modules</div>
+                        <div class="text-2xl font-bold text-purple-400" x-text="selectedProject?.modules?.length || 0"></div>
+                    </div>
+                    <div class="bg-gray-700 p-4 rounded-lg">
+                        <div class="text-xs text-gray-400">Uptime</div>
+                        <div class="text-2xl font-bold text-yellow-400">99.9%</div>
+                    </div>
+                </div>
+                
+                <!-- All Modules -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-bold text-white mb-3">Active Modules</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <template x-for="module in selectedProject?.modules || []" :key="module">
+                            <div class="px-3 py-2 bg-gray-700 rounded-lg text-sm text-gray-300" x-text="module"></div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-4">
+                    <button @click="openProject(selectedProject)" 
+                            class="px-6 py-3 bg-blue-600 hover:bg-blue-700 rounded-lg text-white font-semibold transition">
+                        Open Dashboard
+                    </button>
+                    <button @click="editProject(selectedProject)" 
+                            class="px-6 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg text-white font-semibold transition">
+                        Edit Project
+                    </button>
+                    <button @click="selectedProject = null" 
+                            class="px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white font-semibold transition">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+function projectsViewer() {
+    return {
+        projects: [],
+        filteredProjects: [],
+        selectedProject: null,
+        searchQuery: '',
+        filterStatus: '',
+        filterIndustry: '',
+        
+        get activeProjects() {
+            return this.projects.filter(p => p.status === 'active').length;
+        },
+        
+        get totalRevenue() {
+            return this.projects.reduce((sum, p) => sum + (p.revenue || 0), 0);
+        },
+        
+        get totalWorkers() {
+            return this.projects.reduce((sum, p) => sum + (p.worker_count || 0), 0);
+        },
+        
+        init() {
+            this.loadProjects();
+            this.refreshProjects();
+        },
+        
+        async loadProjects() {
+            try {
+                // Load from localStorage first
+                const saved = localStorage.getItem('fixitfred_projects');
+                if (saved) {
+                    this.projects = JSON.parse(saved);
+                }
+                
+                // Try to load from API
+                const response = await fetch('/api/professional/dashboard-stats');
+                if (response.ok) {
+                    const stats = await response.json();
+                    // Update with real data if available
+                }
+                
+                // Add demo projects if empty
+                if (this.projects.length === 0) {
+                    this.projects = this.generateDemoProjects();
+                    this.saveProjects();
+                }
+                
+                this.filteredProjects = [...this.projects];
+            } catch (error) {
+                console.log('Loading demo projects');
+                this.projects = this.generateDemoProjects();
+                this.filteredProjects = [...this.projects];
+            }
+        },
+        
+        generateDemoProjects() {
+            return [
+                {
+                    id: 'boeing-001',
+                    company_name: 'Boeing Manufacturing',
+                    industry: 'manufacturing',
+                    icon: '🏭',
+                    status: 'active',
+                    worker_count: 500,
+                    revenue: 85000,
+                    modules: ['quality_control', 'chatterfix', 'safety', 'operations', 'memory'],
+                    created_date: '2024-01-15',
+                    deployment_url: 'https://boeing-manufacturing.fixitfred.ai'
+                },
+                {
+                    id: 'healthcare-002',
+                    company_name: 'MedTech Solutions',
+                    industry: 'healthcare',
+                    icon: '🏥',
+                    status: 'active',
+                    worker_count: 320,
+                    revenue: 65000,
+                    modules: ['quality_control', 'safety', 'hr', 'linesmart', 'memory'],
+                    created_date: '2024-01-20',
+                    deployment_url: 'https://medtech-solutions.fixitfred.ai'
+                },
+                {
+                    id: 'logistics-003',
+                    company_name: 'Global Logistics Corp',
+                    industry: 'logistics',
+                    icon: '🚛',
+                    status: 'deploying',
+                    worker_count: 150,
+                    revenue: 45000,
+                    modules: ['operations', 'safety', 'hr', 'finance', 'memory'],
+                    created_date: '2024-01-25',
+                    deployment_url: 'https://global-logistics-corp.fixitfred.ai'
+                }
+            ];
+        },
+        
+        saveProjects() {
+            localStorage.setItem('fixitfred_projects', JSON.stringify(this.projects));
+        },
+        
+        filterProjects() {
+            this.filteredProjects = this.projects.filter(project => {
+                const matchesSearch = !this.searchQuery || 
+                    project.company_name.toLowerCase().includes(this.searchQuery.toLowerCase());
+                const matchesStatus = !this.filterStatus || project.status === this.filterStatus;
+                const matchesIndustry = !this.filterIndustry || project.industry === this.filterIndustry;
+                
+                return matchesSearch && matchesStatus && matchesIndustry;
+            });
+        },
+        
+        resetFilters() {
+            this.searchQuery = '';
+            this.filterStatus = '';
+            this.filterIndustry = '';
+            this.filteredProjects = [...this.projects];
+        },
+        
+        viewProject(project) {
+            this.selectedProject = project;
+        },
+        
+        openProject(project) {
+            if (project.deployment_url) {
+                window.open(project.deployment_url, '_blank');
+            } else {
+                window.open(`/worker/${project.id}-demo`, '_blank');
+            }
+        },
+        
+        editProject(project) {
+            alert(`Edit functionality for ${project.company_name} coming soon!`);
+        },
+        
+        refreshProjects() {
+            this.loadProjects();
+        },
+        
+        formatCurrency(amount) {
+            if (amount >= 1000000) {
+                return (amount / 1000000).toFixed(1) + 'M';
+            } else if (amount >= 1000) {
+                return (amount / 1000).toFixed(0) + 'K';
+            }
+            return amount.toString();
+        }
+    }
+}
+</script>
+</html>

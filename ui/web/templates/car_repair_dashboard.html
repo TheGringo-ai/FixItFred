@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Repair AI Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #dc2626 0%, #ea580c 100%);
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #ea580c 0%, #dc2626 100%);
+        }
+        .fred-glow {
+            box-shadow: 0 0 20px rgba(252, 165, 165, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-red-50 via-white to-orange-50 min-h-screen" x-data="{ activeTab: 'diagnostics' }">
+    <!-- Navigation -->
+    <nav class="gradient-bg border-b border-red-300/20 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-3">
+                        <!-- Fred Character Logo -->
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                            <svg viewBox="0 0 48 48" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Fred's Face Background -->
+                                <circle cx="24" cy="20" r="16" fill="#FFB366" stroke="#E6A85C" stroke-width="1"/>
+                                <!-- Red Frizzy Hair -->
+                                <path d="M12 12 Q8 8 10 6 Q12 4 16 6 Q20 2 24 4 Q28 2 32 6 Q36 4 38 6 Q40 8 36 12" fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                <path d="M14 10 Q12 6 16 8 Q18 4 22 6 Q26 4 30 6 Q34 4 36 8 Q38 10 34 12" fill="#EF4444" stroke="#DC2626" stroke-width="0.5"/>
+                                <!-- Eyes -->
+                                <circle cx="18" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="30" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="18.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                <circle cx="30.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                <!-- Warm Smile -->
+                                <path d="M16 22 Q24 28 32 22" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M18 24 Q24 26 30 24" stroke="#DC2626" stroke-width="1" fill="none" stroke-linecap="round"/>
+                                <!-- Red Beard -->
+                                <path d="M14 24 Q12 28 14 32 Q16 36 20 34 Q24 38 28 34 Q32 36 34 32 Q36 28 34 24" fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                <!-- Overalls -->
+                                <rect x="16" y="32" width="16" height="12" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1" rx="2"/>
+                                <rect x="18" y="28" width="3" height="8" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1"/>
+                                <rect x="27" y="28" width="3" height="8" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1"/>
+                                <!-- Boots -->
+                                <rect x="14" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                <rect x="28" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                <!-- Tool Belt -->
+                                <rect x="16" y="38" width="16" height="2" fill="#92400E" stroke="#78350F" stroke-width="0.5" rx="1"/>
+                                <circle cx="20" cy="39" r="1" fill="#F59E0B"/>
+                                <circle cx="24" cy="39" r="1" fill="#F59E0B"/>
+                                <circle cx="28" cy="39" r="1" fill="#F59E0B"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-white">FixItFred</span>
+                            <div class="text-xs text-red-100">Auto Repair AI</div>
+                        </div>
+                    </a>
+                    <div class="px-3 py-1 bg-red-500/20 rounded-full border border-red-300/30">
+                        <span class="text-xs text-red-100 font-semibold">CAR REPAIR AI</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <a href="/" class="px-4 py-2 hover:bg-white/10 rounded-lg text-white text-sm transition-all duration-200">
+                        ← Back to Main
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-red-600 via-red-500 to-orange-500 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-center space-x-8">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold mb-4">🚗 Car Repair AI Assistant</h1>
+                    <p class="text-xl text-red-100 mb-6">Intelligent diagnostics, maintenance scheduling, and repair management</p>
+                    <div class="flex space-x-4 justify-center">
+                        <button @click="activeTab = 'diagnostics'" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            🔍 Run Diagnostics
+                        </button>
+                        <button @click="activeTab = 'chat'" class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition-all duration-300">
+                            💬 Chat with Auto AI
+                        </button>
+                    </div>
+                </div>
+                <div class="hidden lg:block">
+                    <!-- Specialized Fred Character -->
+                    <div class="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/20 fred-glow">
+                        <svg viewBox="0 0 64 64" class="w-28 h-28" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Fred's Face Background -->
+                            <circle cx="32" cy="26" r="20" fill="#FFB366" stroke="#E6A85C" stroke-width="1.5"/>
+                            <!-- Red Frizzy Hair -->
+                            <path d="M16 14 Q12 10 14 8 Q16 6 20 8 Q24 4 28 6 Q32 4 36 8 Q40 6 42 8 Q44 10 40 14" fill="#DC2626" stroke="#B91C1C" stroke-width="1.5"/>
+                            <path d="M18 12 Q16 8 20 10 Q22 6 26 8 Q30 6 34 8 Q38 6 40 10 Q42 12 38 14" fill="#EF4444" stroke="#DC2626" stroke-width="1"/>
+                            <!-- Eyes -->
+                            <circle cx="24" cy="20" r="2.5" fill="#1F2937"/>
+                            <circle cx="40" cy="20" r="2.5" fill="#1F2937"/>
+                            <circle cx="24.8" cy="19.2" r="0.8" fill="#FFFFFF"/>
+                            <circle cx="40.8" cy="19.2" r="0.8" fill="#FFFFFF"/>
+                            <!-- Warm Smile -->
+                            <path d="M22 28 Q32 36 42 28" stroke="#1F2937" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <path d="M24 30 Q32 34 40 30" stroke="#DC2626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <!-- Red Beard -->
+                            <path d="M18 30 Q16 36 18 42 Q20 46 24 44 Q28 48 32 44 Q36 46 38 42 Q40 36 38 30" fill="#DC2626" stroke="#B91C1C" stroke-width="1.5"/>
+                            <!-- Overalls -->
+                            <rect x="22" y="42" width="20" height="16" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5" rx="3"/>
+                            <rect x="24" y="36" width="4" height="10" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5"/>
+                            <rect x="36" y="36" width="4" height="10" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5"/>
+                            <!-- Boots -->
+                            <rect x="18" y="56" width="8" height="6" fill="#1F2937" stroke="#111827" stroke-width="1.5" rx="1.5"/>
+                            <rect x="38" y="56" width="8" height="6" fill="#1F2937" stroke="#111827" stroke-width="1.5" rx="1.5"/>
+                            <!-- Tool Belt with Wrench -->
+                            <rect x="22" y="50" width="20" height="3" fill="#92400E" stroke="#78350F" stroke-width="1" rx="1.5"/>
+                            <rect x="28" y="48" width="8" height="2" fill="#374151" stroke="#1F2937" stroke-width="0.5" rx="1"/>
+                            <rect x="30" y="46" width="4" height="2" fill="#374151" stroke="#1F2937" stroke-width="0.5"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Tab Navigation -->
+        <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-100">
+            <div class="flex space-x-1 mb-6">
+                <button @click="activeTab = 'diagnostics'"
+                        :class="activeTab === 'diagnostics' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                        class="px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    🔍 AI Diagnostics
+                </button>
+                <button @click="activeTab = 'maintenance'"
+                        :class="activeTab === 'maintenance' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                        class="px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    📅 Maintenance
+                </button>
+                <button @click="activeTab = 'inventory'"
+                        :class="activeTab === 'inventory' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                        class="px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    📦 Parts Inventory
+                </button>
+                <button @click="activeTab = 'chat'"
+                        :class="activeTab === 'chat' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'"
+                        class="px-6 py-3 rounded-lg font-semibold transition-all duration-200">
+                    🤖 Auto Repair AI
+                </button>
+            </div>
+
+            <!-- AI Diagnostics Tab -->
+            <div x-show="activeTab === 'diagnostics'" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-xl border border-red-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">🔍</span>
+                            Vehicle Diagnostic Scanner
+                        </h3>
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Engine Health</span>
+                                <span class="text-sm font-semibold text-green-600">98% ✓</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 98%"></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Brake System</span>
+                                <span class="text-sm font-semibold text-yellow-600">85% ⚠️</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-yellow-500 h-2 rounded-full" style="width: 85%"></div>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-gray-600">Transmission</span>
+                                <span class="text-sm font-semibold text-green-600">95% ✓</span>
+                            </div>
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="bg-green-500 h-2 rounded-full" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <button class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold mt-4 w-full">
+                            Run Full Diagnostic Scan
+                        </button>
+                    </div>
+
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">⚠️</span>
+                            Issues Detected
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                <span class="text-yellow-500 text-lg">⚠️</span>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Brake Pad Wear</p>
+                                    <p class="text-sm text-gray-600">Front brake pads at 15% remaining. Schedule replacement within 2 weeks.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <span class="text-blue-500 text-lg">🔧</span>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Oil Change Due</p>
+                                    <p class="text-sm text-gray-600">Next service in 500 miles. Current mileage: 12,450</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start space-x-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                                <span class="text-green-500 text-lg">✅</span>
+                                <div>
+                                    <p class="font-semibold text-gray-800">Tire Pressure OK</p>
+                                    <p class="text-sm text-gray-600">All tires within optimal pressure range.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Maintenance Tab -->
+            <div x-show="activeTab === 'maintenance'" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 card-hover">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                            <span class="text-2xl">🛢️</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Oil Change</h3>
+                        <p class="text-gray-600 text-sm mb-4">Next service: 500 miles</p>
+                        <button class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold w-full">
+                            Schedule Service
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 card-hover">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                            <span class="text-2xl">🛞</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Tire Rotation</h3>
+                        <p class="text-gray-600 text-sm mb-4">Due in 3,000 miles</p>
+                        <button class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold w-full">
+                            Schedule Service
+                        </button>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 card-hover">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                            <span class="text-2xl">🔋</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">Battery Check</h3>
+                        <p class="text-gray-600 text-sm mb-4">Annual inspection due</p>
+                        <button class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold w-full">
+                            Schedule Service
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div x-show="activeTab === 'inventory'" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">📦</span>
+                            Parts Inventory Status
+                        </h3>
+                        <div class="space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Brake Pads</span>
+                                <span class="text-sm font-semibold text-red-600">Low Stock (3)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Oil Filters</span>
+                                <span class="text-sm font-semibold text-green-600">In Stock (25)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Spark Plugs</span>
+                                <span class="text-sm font-semibold text-yellow-600">Medium (8)</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm text-gray-600">Tires</span>
+                                <span class="text-sm font-semibold text-green-600">Well Stocked (45)</span>
+                            </div>
+                        </div>
+                        <button class="btn-gradient text-white px-4 py-2 rounded-lg text-sm font-semibold mt-4 w-full">
+                            Order Low Stock Parts
+                        </button>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                            <span class="text-2xl mr-2">📊</span>
+                            Inventory Analytics
+                        </h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Parts Turnover Rate</span>
+                                    <span class="font-semibold">87%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-500 h-2 rounded-full" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Stock Accuracy</span>
+                                    <span class="font-semibold">94%</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-green-500 h-2 rounded-full" style="width: 94%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Chat Tab -->
+            <div x-show="activeTab === 'chat'" class="space-y-6">
+                <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-xl border border-red-200">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="text-2xl mr-2">🤖</span>
+                        Auto Repair AI Assistant
+                    </h3>
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 mb-4 h-64 overflow-y-auto">
+                        <div class="space-y-3">
+                            <div class="flex items-start space-x-3">
+                                <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <span class="text-sm">🚗</span>
+                                </div>
+                                <div class="bg-gray-100 p-3 rounded-lg max-w-md">
+                                    <p class="text-sm text-gray-800">Hello! I'm your Auto Repair AI assistant. I can help with diagnostics, maintenance scheduling, parts recommendations, and repair guidance. What can I help you with today?</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex space-x-2">
+                        <input type="text" placeholder="Ask me about car repairs, diagnostics, or maintenance..."
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <button class="btn-gradient text-white px-6 py-2 rounded-lg font-semibold">
+                            Send
+                        </button>
+                    </div>
+                    <div class="mt-4 flex flex-wrap gap-2">
+                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">
+                            "Check engine light on"
+                        </button>
+                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">
+                            "Oil change schedule"
+                        </button>
+                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">
+                            "Brake inspection"
+                        </button>
+                        <button class="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm hover:bg-gray-200">
+                            "Parts compatibility"
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-refresh diagnostics every 30 seconds
+        setInterval(() => {
+            if (activeTab === 'diagnostics') {
+                console.log('Refreshing diagnostic data...');
+            }
+        }, 30000);
+    </script>
+</body>
+</html>

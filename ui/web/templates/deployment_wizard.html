@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Wizard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - Deployment Wizard</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200">Modules</a>
+                <a href="/clients" class="hover:text-blue-200">Clients</a>
+                <a href="/deploy" class="hover:text-blue-200 font-bold">Deploy</a>
+                <a href="/integrations" class="hover:text-blue-200">Integrations</a>
+                <a href="/ai-tuning" class="hover:text-blue-200">AI Tuning</a>
+                <a href="/analytics" class="hover:text-blue-200">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4" x-data="deploymentWizard()">
+        <!-- Progress Bar -->
+        <div class="bg-white p-6 rounded-lg shadow mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">🚀 Deploy Complete Business System</h2>
+                <span class="text-sm text-gray-600">Step <span x-text="currentStep"></span> of 6</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                     :style="`width: ${(currentStep / 6) * 100}%`"></div>
+            </div>
+        </div>
+
+        <!-- Deployment Form -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <!-- Step 1: Company Information -->
+            <div x-show="currentStep === 1">
+                <h3 class="text-lg font-bold mb-4">🏢 Company Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Company Name</label>
+                        <input type="text" x-model="companyName" class="w-full p-2 border rounded-lg" 
+                               placeholder="Advanced Manufacturing Corp">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Industry</label>
+                        <select x-model="industry" class="w-full p-2 border rounded-lg">
+                            <option value="">Select industry...</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="retail">Retail</option>
+                            <option value="logistics">Logistics</option>
+                            <option value="finance">Finance</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Employee Count</label>
+                        <input type="number" x-model="employeeCount" class="w-full p-2 border rounded-lg" 
+                               placeholder="450">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Annual Revenue</label>
+                        <select x-model="revenue" class="w-full p-2 border rounded-lg">
+                            <option value="">Select range...</option>
+                            <option value="1-5M">$1M - $5M</option>
+                            <option value="5-25M">$5M - $25M</option>
+                            <option value="25-100M">$25M - $100M</option>
+                            <option value="100M+">$100M+</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Module Selection -->
+            <div x-show="currentStep === 2">
+                <h3 class="text-lg font-bold mb-4">📦 Select Business Modules</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <template x-for="module in availableModules" :key="module.id">
+                        <div class="border p-4 rounded-lg cursor-pointer hover:bg-blue-50"
+                             :class="selectedModules.includes(module.id) ? 'border-blue-500 bg-blue-50' : 'border-gray-300'"
+                             @click="toggleModule(module.id)">
+                            <div class="flex items-center">
+                                <input type="checkbox" :checked="selectedModules.includes(module.id)" 
+                                       class="mr-3" @click.stop>
+                                <div>
+                                    <h4 class="font-semibold" x-text="module.name"></h4>
+                                    <p class="text-sm text-gray-600" x-text="module.description"></p>
+                                    <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded" x-text="module.price"></span>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Step 3: Configuration -->
+            <div x-show="currentStep === 3">
+                <h3 class="text-lg font-bold mb-4">⚙️ System Configuration</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Database Configuration</label>
+                        <select x-model="dbConfig" class="w-full p-2 border rounded-lg">
+                            <option value="cloud">Cloud Database (Recommended)</option>
+                            <option value="onpremise">On-Premise Database</option>
+                            <option value="hybrid">Hybrid Configuration</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Voice Interface</label>
+                        <div class="flex items-center">
+                            <input type="checkbox" x-model="enableVoice" class="mr-2">
+                            <span>Enable "Hey Fred" voice commands</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">AI Model Preference</label>
+                        <select x-model="aiModel" class="w-full p-2 border rounded-lg">
+                            <option value="auto">Auto-select best model</option>
+                            <option value="gpt4">GPT-4 (OpenAI)</option>
+                            <option value="claude">Claude 3.5 Sonnet</option>
+                            <option value="llama">Llama 3.2 (Local)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Integration -->
+            <div x-show="currentStep === 4">
+                <h3 class="text-lg font-bold mb-4">🔌 System Integrations</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Existing ERP System</label>
+                        <select x-model="existingErp" class="w-full p-2 border rounded-lg">
+                            <option value="">No existing ERP</option>
+                            <option value="sap">SAP</option>
+                            <option value="oracle">Oracle</option>
+                            <option value="microsoft">Microsoft Dynamics</option>
+                            <option value="workday">Workday</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Additional Integrations</label>
+                        <textarea x-model="integrations" class="w-full p-2 border rounded-lg h-20" 
+                                  placeholder="List any existing systems to integrate (CRM, inventory management, etc.)"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: System Integrations -->
+            <div x-show="currentStep === 5">
+                <h3 class="text-lg font-bold mb-4">🔌 Connect Existing Systems</h3>
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <h4 class="font-semibold text-blue-800 mb-2">✨ Universal Integration Hub</h4>
+                        <p class="text-blue-700 mb-3">Connect ANY existing system, API, automation, or application to FixItFred during onboarding.</p>
+                        <button @click="openIntegrationHub()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                            🔗 Open Integration Hub
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium mb-2">Systems to Integrate (Optional)</label>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <template x-for="system in availableSystems" :key="system.name">
+                                <label class="flex items-center p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
+                                    <input type="checkbox" :value="system.name" 
+                                           x-model="selectedSystems" class="mr-3">
+                                    <div>
+                                        <div class="font-medium text-sm" x-text="system.name"></div>
+                                        <div class="text-xs text-gray-600" x-text="system.type"></div>
+                                    </div>
+                                </label>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div x-show="selectedSystems.length > 0">
+                        <h5 class="font-medium mb-2">Selected Integrations:</h5>
+                        <div class="space-y-2">
+                            <template x-for="system in selectedSystems" :key="system">
+                                <div class="flex items-center justify-between p-2 bg-green-50 rounded">
+                                    <span x-text="system"></span>
+                                    <span class="text-xs text-green-600">Will be configured post-deployment</span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h5 class="font-medium text-yellow-800 mb-2">💡 Integration Benefits</h5>
+                        <ul class="text-sm text-yellow-700 space-y-1">
+                            <li>• Sync data automatically from existing systems</li>
+                            <li>• Eliminate manual data entry and errors</li>
+                            <li>• Real-time updates across all connected systems</li>
+                            <li>• Custom data mapping for your specific needs</li>
+                            <li>• Support for APIs, webhooks, databases, and files</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 6: Review & Deploy -->
+            <div x-show="currentStep === 6">
+                <h3 class="text-lg font-bold mb-4">📋 Review & Deploy</h3>
+                <div class="space-y-4">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h4 class="font-semibold mb-2">Deployment Summary</h4>
+                        <div class="space-y-2 text-sm">
+                            <div class="flex justify-between">
+                                <span>Company:</span>
+                                <span x-text="companyName"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Industry:</span>
+                                <span x-text="industry"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Employees:</span>
+                                <span x-text="employeeCount"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Selected Modules:</span>
+                                <span x-text="selectedModules.length"></span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Estimated Deployment Time:</span>
+                                <span class="font-bold text-green-600">< 60 seconds</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span>Estimated Cost Savings:</span>
+                                <span class="font-bold text-green-600" x-text="calculateSavings()"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div x-show="deploymentResult" class="bg-green-100 border border-green-400 p-4 rounded-lg">
+                        <h4 class="font-bold text-green-800">🎉 Deployment Successful!</h4>
+                        <div x-show="deploymentResult" x-text="deploymentResult" class="text-sm mt-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-between mt-6">
+                <button @click="previousStep()" 
+                        x-show="currentStep > 1"
+                        class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">
+                    ← Previous
+                </button>
+                <div x-show="currentStep === 1"></div>
+                
+                <button @click="nextStep()" 
+                        x-show="currentStep < 6"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                    Next →
+                </button>
+                
+                <button @click="deploySystem()" 
+                        x-show="currentStep === 6"
+                        class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                    🚀 Deploy System
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function deploymentWizard() {
+            return {
+                currentStep: 1,
+                
+                // Step 1 data
+                companyName: '',
+                industry: '',
+                employeeCount: '',
+                revenue: '',
+                
+                // Step 2 data  
+                selectedModules: [],
+                availableModules: [
+                    {id: 'quality', name: 'Quality Control', description: 'ISO compliance, inspection workflows', price: '$299/month'},
+                    {id: 'maintenance', name: 'Maintenance Management', description: 'Predictive maintenance, scheduling', price: '$399/month'},
+                    {id: 'safety', name: 'Safety Compliance', description: 'OSHA compliance, incident tracking', price: '$199/month'},
+                    {id: 'operations', name: 'Operations Management', description: 'Production planning, workflow optimization', price: '$499/month'},
+                    {id: 'finance', name: 'Financial Management', description: 'Accounting, reporting, analytics', price: '$599/month'},
+                    {id: 'hr', name: 'HR Management', description: 'Employee management, payroll, benefits', price: '$299/month'}
+                ],
+                
+                // Step 3 data
+                dbConfig: 'cloud',
+                enableVoice: true,
+                aiModel: 'auto',
+                
+                // Step 4 data
+                existingErp: '',
+                integrations: '',
+                
+                // Step 5 data
+                selectedSystems: [],
+                availableSystems: [
+                    {name: 'SAP ERP', type: 'Enterprise Resource Planning'},
+                    {name: 'Salesforce CRM', type: 'Customer Relationship Management'},
+                    {name: 'Oracle Database', type: 'Database System'},
+                    {name: 'Microsoft Dynamics', type: 'ERP System'},
+                    {name: 'Zapier Automation', type: 'Workflow Automation'},
+                    {name: 'HubSpot CRM', type: 'Marketing & Sales'},
+                    {name: 'Slack', type: 'Team Communication'},
+                    {name: 'Jira', type: 'Project Management'},
+                    {name: 'AWS IoT', type: 'Internet of Things'},
+                    {name: 'Google Analytics', type: 'Web Analytics'},
+                    {name: 'Shopify', type: 'E-commerce Platform'},
+                    {name: 'QuickBooks', type: 'Accounting Software'}
+                ],
+                
+                // Step 6 data
+                deploymentResult: '',
+                
+                nextStep() {
+                    if (this.currentStep < 6) {
+                        this.currentStep++;
+                    }
+                },
+                
+                previousStep() {
+                    if (this.currentStep > 1) {
+                        this.currentStep--;
+                    }
+                },
+                
+                toggleModule(moduleId) {
+                    const index = this.selectedModules.indexOf(moduleId);
+                    if (index > -1) {
+                        this.selectedModules.splice(index, 1);
+                    } else {
+                        this.selectedModules.push(moduleId);
+                    }
+                },
+                
+                calculateSavings() {
+                    const baseEmployeeSavings = parseInt(this.employeeCount) * 1000;
+                    const moduleSavings = this.selectedModules.length * 250000;
+                    const total = baseEmployeeSavings + moduleSavings + 1500000;
+                    return `$${total.toLocaleString()}`;
+                },
+                
+                async deploySystem() {
+                    const formData = new FormData();
+                    formData.append('company_name', this.companyName);
+                    formData.append('industry', this.industry);
+                    formData.append('employee_count', this.employeeCount);
+                    formData.append('selected_modules', this.selectedModules.join(','));
+                    
+                    try {
+                        const response = await fetch('/api/deploy/client', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            this.deploymentResult = `System deployed in ${result.deployment_time}! Client ID: ${result.client_id}. Estimated savings: ${result.estimated_savings}`;
+                        } else {
+                            this.deploymentResult = `Deployment failed: ${result.message}`;
+                        }
+                    } catch (error) {
+                        this.deploymentResult = `Deployment error: ${error.message}`;
+                    }
+                },
+                
+                openIntegrationHub() {
+                    window.open('/integrations', '_blank');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

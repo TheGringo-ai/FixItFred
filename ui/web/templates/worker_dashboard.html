@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Worker Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <!-- Worker Navigation -->
+    <nav class="bg-green-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">👷 FixItFred - Worker Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm" x-text="`Welcome, ${workerData.worker_info.name}`"></span>
+                <span class="text-xs bg-green-500 px-2 py-1 rounded" x-text="workerData.worker_info.shift_status"></span>
+                <button class="bg-green-700 px-3 py-1 rounded text-sm hover:bg-green-800">
+                    🔊 "Hey Fred"
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4" x-data="workerDashboard()">
+        <!-- Worker Info & Quick Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Today's Tasks</h3>
+                <p class="text-3xl font-bold text-blue-600" x-text="workerData.task_summary.total"></p>
+                <p class="text-sm text-green-600" x-text="`${workerData.task_summary.completed} completed`"></p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">AI Agents</h3>
+                <p class="text-3xl font-bold text-purple-600" x-text="workerData.agent_summary.active_agents"></p>
+                <p class="text-sm text-purple-600">🤖 Ready to assist</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Completion Rate</h3>
+                <p class="text-3xl font-bold text-green-600" x-text="workerData.task_summary.completion_rate + '%'"></p>
+                <p class="text-sm text-green-600">📈 This shift</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Department</h3>
+                <p class="text-2xl font-bold text-orange-600" x-text="workerData.worker_info.department"></p>
+                <p class="text-sm text-orange-600" x-text="workerData.worker_info.role"></p>
+            </div>
+        </div>
+
+        <!-- Main Worker Interface -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- My AI Agents -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">🤖 My AI Agents</h3>
+                <div class="space-y-4">
+                    <template x-for="agent in workerData.assigned_agents" :key="agent.id">
+                        <div class="border rounded-lg p-4" 
+                             :class="selectedAgent?.id === agent.id ? 'border-blue-500 bg-blue-50' : 'border-gray-300'">
+                            <div class="flex justify-between items-start mb-2">
+                                <div>
+                                    <h4 class="font-semibold" x-text="agent.name"></h4>
+                                    <p class="text-sm text-gray-600" x-text="agent.module_type + ' Assistant'"></p>
+                                </div>
+                                <span class="text-xs px-2 py-1 rounded" 
+                                      :class="agent.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'"
+                                      x-text="agent.status"></span>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p class="text-sm font-medium mb-1">Capabilities:</p>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="capability in agent.capabilities.slice(0, 3)" :key="capability">
+                                        <span class="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded" x-text="capability"></span>
+                                    </template>
+                                    <span x-show="agent.capabilities.length > 3" class="text-xs text-gray-500">
+                                        +<span x-text="agent.capabilities.length - 3"></span> more
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <button @click="selectAgent(agent)" 
+                                    class="w-full bg-blue-500 text-white py-2 px-3 rounded text-sm hover:bg-blue-600">
+                                💬 Chat with <span x-text="agent.name"></span>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- AI Agent Chat -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold">💬 Agent Chat</h3>
+                    <span x-show="selectedAgent" class="text-sm text-gray-600" x-text="selectedAgent?.name || 'No agent selected'"></span>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div class="border rounded-lg h-64 overflow-y-auto p-4 mb-4 bg-gray-50">
+                    <div x-show="!selectedAgent" class="text-center text-gray-500 mt-20">
+                        Select an AI agent to start chatting
+                    </div>
+                    
+                    <div x-show="selectedAgent" class="space-y-3">
+                        <template x-for="message in chatMessages" :key="message.id">
+                            <div class="flex" :class="message.sender === 'worker' ? 'justify-end' : 'justify-start'">
+                                <div class="max-w-xs p-3 rounded-lg" 
+                                     :class="message.sender === 'worker' ? 'bg-blue-500 text-white' : 'bg-white border'">
+                                    <p class="text-sm" x-text="message.text"></p>
+                                    <p class="text-xs mt-1 opacity-70" x-text="message.time"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div x-show="selectedAgent">
+                    <div class="flex space-x-2">
+                        <input type="text" x-model="chatInput" @keyup.enter="sendMessage()" 
+                               class="flex-1 p-2 border rounded-lg" 
+                               placeholder="Ask your AI agent anything...">
+                        <button @click="sendMessage()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            Send
+                        </button>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-3">
+                        <p class="text-sm font-medium mb-2">Quick Actions:</p>
+                        <div class="flex flex-wrap gap-2">
+                            <button @click="quickMessage('Help me with my current task')" 
+                                    class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">
+                                Current Task Help
+                            </button>
+                            <button @click="quickMessage('What should I do next?')" 
+                                    class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">
+                                What's Next?
+                            </button>
+                            <button @click="quickMessage('Report an issue')" 
+                                    class="text-xs bg-gray-100 px-2 py-1 rounded hover:bg-gray-200">
+                                Report Issue
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Today's Tasks -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">📋 Today's Tasks</h3>
+                
+                <div class="space-y-3">
+                    <template x-for="task in todaysTasks" :key="task.id">
+                        <div class="border rounded-lg p-3" 
+                             :class="task.status === 'completed' ? 'bg-green-50 border-green-200' : task.status === 'in_progress' ? 'bg-blue-50 border-blue-200' : 'border-gray-200'">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-medium text-sm" x-text="task.title"></h4>
+                                <span class="text-xs px-2 py-1 rounded" 
+                                      :class="task.priority === 'high' ? 'bg-red-100 text-red-800' : task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'"
+                                      x-text="task.priority"></span>
+                            </div>
+                            
+                            <p class="text-xs text-gray-600 mb-2" x-text="task.description"></p>
+                            
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs" 
+                                      :class="task.status === 'completed' ? 'text-green-600' : task.status === 'in_progress' ? 'text-blue-600' : 'text-gray-600'"
+                                      x-text="task.status.replace('_', ' ')"></span>
+                                
+                                <div class="flex space-x-1">
+                                    <button x-show="task.status === 'pending'" @click="startTask(task)" 
+                                            class="text-xs bg-blue-500 text-white px-2 py-1 rounded hover:bg-blue-600">
+                                        Start
+                                    </button>
+                                    <button x-show="task.status === 'in_progress'" @click="completeTask(task)" 
+                                            class="text-xs bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600">
+                                        Complete
+                                    </button>
+                                    <button @click="getTaskHelp(task)" 
+                                            class="text-xs bg-purple-500 text-white px-2 py-1 rounded hover:bg-purple-600">
+                                        🤖 AI Help
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                
+                <!-- Task Summary -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div class="text-sm">
+                        <div class="flex justify-between">
+                            <span>Pending:</span>
+                            <span x-text="workerData.task_summary.pending"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>In Progress:</span>
+                            <span x-text="workerData.task_summary.in_progress"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Completed:</span>
+                            <span x-text="workerData.task_summary.completed"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Collection Interface -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-4">📊 Data Collection</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Quick Data Entry -->
+                <div>
+                    <h4 class="font-semibold mb-3">Quick Data Entry</h4>
+                    <div class="space-y-3">
+                        <button @click="openDataCollection('inspection')" 
+                                class="w-full bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600">
+                            🔍 Record Inspection
+                        </button>
+                        <button @click="openDataCollection('measurement')" 
+                                class="w-full bg-green-500 text-white p-3 rounded-lg hover:bg-green-600">
+                            📏 Record Measurement
+                        </button>
+                        <button @click="openDataCollection('issue')" 
+                                class="w-full bg-red-500 text-white p-3 rounded-lg hover:bg-red-600">
+                            ⚠️ Report Issue
+                        </button>
+                        <button @click="openDataCollection('observation')" 
+                                class="w-full bg-purple-500 text-white p-3 rounded-lg hover:bg-purple-600">
+                            👁️ Log Observation
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Voice Data Entry -->
+                <div>
+                    <h4 class="font-semibold mb-3">Voice Data Entry</h4>
+                    <div class="text-center">
+                        <button @click="startVoiceRecording()" 
+                                class="bg-green-600 text-white p-6 rounded-full hover:bg-green-700"
+                                :class="voiceRecording ? 'animate-pulse bg-red-600' : ''">
+                            <span x-show="!voiceRecording">🎤</span>
+                            <span x-show="voiceRecording">🔴</span>
+                        </button>
+                        <p class="text-sm mt-2" x-text="voiceRecording ? 'Recording... Click to stop' : 'Click to start voice recording'"></p>
+                        
+                        <div x-show="lastVoiceTranscript" class="mt-3 p-3 bg-gray-100 rounded text-sm">
+                            <p class="font-medium">Last Recording:</p>
+                            <p x-text="lastVoiceTranscript"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Data -->
+                <div>
+                    <h4 class="font-semibold mb-3">Recent Data Entries</h4>
+                    <div class="space-y-2">
+                        <template x-for="entry in recentDataEntries" :key="entry.id">
+                            <div class="text-sm border rounded p-2">
+                                <div class="flex justify-between">
+                                    <span class="font-medium" x-text="entry.type"></span>
+                                    <span class="text-gray-500" x-text="entry.time"></span>
+                                </div>
+                                <p class="text-gray-600" x-text="entry.description"></p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function workerDashboard() {
+            return {
+                // Worker data (would come from API)
+                workerData: {
+                    worker_info: {
+                        name: 'John Smith',
+                        role: 'Quality Inspector',
+                        department: 'Manufacturing',
+                        shift_status: 'On Duty'
+                    },
+                    task_summary: {
+                        total: 8,
+                        completed: 3,
+                        pending: 3,
+                        in_progress: 2,
+                        completion_rate: 37.5
+                    },
+                    agent_summary: {
+                        total_agents: 2,
+                        active_agents: 2,
+                        available_capabilities: 12
+                    },
+                    assigned_agents: [
+                        {
+                            id: 'quality_agent_1',
+                            name: 'QualityBot',
+                            module_type: 'quality',
+                            status: 'active',
+                            capabilities: [
+                                'Visual inspection guidance',
+                                'Defect pattern recognition',
+                                'Quality data collection',
+                                'Inspection report generation',
+                                'Non-conformance reporting',
+                                'Corrective action tracking'
+                            ]
+                        },
+                        {
+                            id: 'safety_agent_1',
+                            name: 'SafetyGuard',
+                            module_type: 'safety',
+                            status: 'active',
+                            capabilities: [
+                                'Hazard identification',
+                                'Risk assessment',
+                                'Safety compliance',
+                                'Incident reporting',
+                                'PPE verification',
+                                'Emergency procedures'
+                            ]
+                        }
+                    ]
+                },
+                
+                // Chat interface
+                selectedAgent: null,
+                chatMessages: [],
+                chatInput: '',
+                
+                // Tasks
+                todaysTasks: [
+                    {
+                        id: 'task_1',
+                        title: 'Morning Quality Inspection Round',
+                        description: 'Inspect production lines and verify quality standards',
+                        priority: 'high',
+                        status: 'completed'
+                    },
+                    {
+                        id: 'task_2',
+                        title: 'Defect Data Collection',
+                        description: 'Record and categorize any defects found during inspection',
+                        priority: 'medium',
+                        status: 'in_progress'
+                    },
+                    {
+                        id: 'task_3',
+                        title: 'Equipment Calibration Check',
+                        description: 'Verify measuring equipment is properly calibrated',
+                        priority: 'high',
+                        status: 'pending'
+                    },
+                    {
+                        id: 'task_4',
+                        title: 'Quality Report Generation',
+                        description: 'Generate daily quality summary report',
+                        priority: 'medium',
+                        status: 'pending'
+                    }
+                ],
+                
+                // Data collection
+                voiceRecording: false,
+                lastVoiceTranscript: '',
+                recentDataEntries: [
+                    {id: 1, type: 'Inspection', description: 'Line 3 - All quality checks passed', time: '10:30 AM'},
+                    {id: 2, type: 'Measurement', description: 'Part tolerance: 0.002" within spec', time: '10:15 AM'},
+                    {id: 3, type: 'Issue', description: 'Minor surface defect on Batch #247', time: '09:45 AM'}
+                ],
+                
+                selectAgent(agent) {
+                    this.selectedAgent = agent;
+                    this.chatMessages = [
+                        {
+                            id: 1,
+                            sender: 'agent',
+                            text: `Hi! I'm ${agent.name}, your ${agent.module_type} assistant. How can I help you today?`,
+                            time: new Date().toLocaleTimeString()
+                        }
+                    ];
+                },
+                
+                sendMessage() {
+                    if (!this.chatInput.trim() || !this.selectedAgent) return;
+                    
+                    // Add worker message
+                    this.chatMessages.push({
+                        id: Date.now(),
+                        sender: 'worker',
+                        text: this.chatInput,
+                        time: new Date().toLocaleTimeString()
+                    });
+                    
+                    const userMessage = this.chatInput;
+                    this.chatInput = '';
+                    
+                    // Simulate AI response
+                    setTimeout(() => {
+                        let response = this.generateAgentResponse(userMessage);
+                        this.chatMessages.push({
+                            id: Date.now() + 1,
+                            sender: 'agent',
+                            text: response,
+                            time: new Date().toLocaleTimeString()
+                        });
+                    }, 1000);
+                },
+                
+                quickMessage(message) {
+                    this.chatInput = message;
+                    this.sendMessage();
+                },
+                
+                generateAgentResponse(message) {
+                    const agent = this.selectedAgent;
+                    
+                    if (agent.module_type === 'quality') {
+                        if (message.toLowerCase().includes('defect')) {
+                            return "I see you're dealing with a defect. Let me guide you: 1) Document the defect location and type, 2) Take photos if possible, 3) Check for similar patterns in recent production. What type of defect are you seeing?";
+                        } else if (message.toLowerCase().includes('inspection')) {
+                            return "For your inspection, follow this checklist: 1) Visual examination for obvious defects, 2) Dimensional checks using calibrated tools, 3) Functional testing if required. Which inspection point would you like to start with?";
+                        } else if (message.toLowerCase().includes('current task')) {
+                            return "Your current task is defect data collection. I can help you categorize defects and suggest root causes. What defects have you found so far?";
+                        }
+                    } else if (agent.module_type === 'safety') {
+                        if (message.toLowerCase().includes('hazard')) {
+                            return "Safety first! Let me help you assess the risk: 1) Immediate danger - stop work and evacuate, 2) Moderate risk - implement controls, 3) Low risk - document and monitor. What hazard are you concerned about?";
+                        } else if (message.toLowerCase().includes('current task')) {
+                            return "Your safety tasks today include area inspections and incident follow-up. I'll guide you through safety checkpoints and help identify risks. What area are you inspecting?";
+                        }
+                    }
+                    
+                    return `I can help you with: ${agent.capabilities.slice(0, 3).join(', ')}. What specific assistance do you need?`;
+                },
+                
+                startTask(task) {
+                    task.status = 'in_progress';
+                    this.workerData.task_summary.in_progress++;
+                    this.workerData.task_summary.pending--;
+                    alert(`Started task: ${task.title}\n\nYour AI agent can provide guidance throughout this task.`);
+                },
+                
+                completeTask(task) {
+                    task.status = 'completed';
+                    this.workerData.task_summary.completed++;
+                    this.workerData.task_summary.in_progress--;
+                    this.workerData.task_summary.completion_rate = Math.round((this.workerData.task_summary.completed / this.workerData.task_summary.total) * 100);
+                    alert(`Task completed: ${task.title}\n\nGreat work! Your completion rate is now ${this.workerData.task_summary.completion_rate}%`);
+                },
+                
+                getTaskHelp(task) {
+                    if (this.selectedAgent) {
+                        this.quickMessage(`Help me with: ${task.title}`);
+                    } else {
+                        alert('Please select an AI agent first to get task help.');
+                    }
+                },
+                
+                openDataCollection(type) {
+                    alert(`Opening ${type} data collection form...\n\nThis would open a specialized form for recording ${type} data with AI assistance.`);
+                },
+                
+                startVoiceRecording() {
+                    this.voiceRecording = !this.voiceRecording;
+                    
+                    if (this.voiceRecording) {
+                        // Simulate voice recording
+                        setTimeout(() => {
+                            this.voiceRecording = false;
+                            this.lastVoiceTranscript = "Inspected Line 3, found minor surface defect on part number 12345, documented in system, no safety concerns.";
+                            
+                            // Add to recent data entries
+                            this.recentDataEntries.unshift({
+                                id: Date.now(),
+                                type: 'Voice Entry',
+                                description: 'Quality inspection data recorded',
+                                time: new Date().toLocaleTimeString()
+                            });
+                        }, 3000);
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ industry_info.name }} AI Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .industry-gradient {
+            background: linear-gradient(135deg, var(--color-start) 0%, var(--color-end) 100%);
+        }
+        .chat-container {
+            height: 400px;
+        }
+        .typing-indicator {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 via-white to-gray-100 min-h-screen" 
+      x-data="dashboardApp()" 
+      x-init="initDashboard()">
+
+    <!-- Navigation -->
+    <nav class="gradient-bg border-b border-blue-300/20 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                            <span class="text-2xl">🔧</span>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-white">FixItFred</span>
+                            <div class="text-xs text-blue-100">AI Assistant</div>
+                        </div>
+                    </a>
+                    <div class="text-2xl">{{ industry_info.icon }}</div>
+                    <div>
+                        <span class="text-lg font-semibold text-white">{{ industry_info.name }}</span>
+                        <div class="text-xs text-blue-100">AI-Powered Dashboard</div>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <div class="text-xs text-right">
+                        <div class="text-cyan-300 font-bold" x-text="stats.activeChats"></div>
+                        <div class="text-blue-100">Active Chats</div>
+                    </div>
+                    <a href="/" class="bg-white/20 text-white px-4 py-2 rounded-lg hover:bg-white/30 transition-colors">
+                        ← Back to Main
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard -->
+    <div class="container mx-auto px-4 py-8">
+        
+        <!-- Welcome Section -->
+        <div class="bg-gradient-to-r from-{{ industry_info.color }}-500 to-{{ industry_info.color }}-600 text-white p-8 rounded-xl shadow-lg mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold mb-2">{{ industry_info.icon }} {{ industry_info.name }} AI Assistant</h1>
+                    <p class="text-{{ industry_info.color }}-100 text-lg">Powered by OpenAI • Cost-optimized • Real-time support</p>
+                </div>
+                <div class="text-6xl opacity-20">{{ industry_info.icon }}</div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">AI Status</h3>
+                        <p class="text-2xl font-bold text-green-600">Online</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🤖</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Response Time</h3>
+                        <p class="text-2xl font-bold text-blue-600" x-text="stats.avgResponseTime"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">⚡</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Daily Queries</h3>
+                        <p class="text-2xl font-bold text-purple-600" x-text="stats.dailyQueries"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">📊</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Cost Today</h3>
+                        <p class="text-2xl font-bold text-orange-600" x-text="'$' + stats.dailyCost.toFixed(4)"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">💰</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- AI Chat Interface -->
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-lg">
+                <div class="p-6 border-b border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 flex items-center">
+                        <span class="mr-3">💬</span>
+                        Chat with {{ industry_info.name }} AI
+                    </h2>
+                    <p class="text-gray-600 text-sm mt-1">Ask questions, get expert advice, and solve problems instantly</p>
+                </div>
+                
+                <!-- Chat Messages -->
+                <div class="chat-container overflow-y-auto p-6 space-y-4" id="chatContainer">
+                    <template x-for="message in chatHistory" :key="message.timestamp">
+                        <div :class="message.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                            <div :class="message.role === 'user' ? 
+                                'bg-blue-500 text-white p-3 rounded-lg max-w-xs lg:max-w-md' : 
+                                'bg-gray-100 text-gray-800 p-3 rounded-lg max-w-xs lg:max-w-md'">
+                                <div class="text-sm" x-text="message.content"></div>
+                                <div class="text-xs opacity-70 mt-1" x-text="formatTime(message.timestamp)"></div>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <!-- Typing Indicator -->
+                    <div x-show="isTyping" class="flex justify-start">
+                        <div class="bg-gray-100 text-gray-800 p-3 rounded-lg typing-indicator">
+                            <div class="text-sm">AI is thinking...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="p-6 border-t border-gray-200">
+                    <form @submit.prevent="sendMessage()" class="flex space-x-4">
+                        <input 
+                            type="text" 
+                            x-model="currentMessage"
+                            placeholder="Ask your {{ industry_info.name.lower() }} question..."
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            :disabled="isTyping"
+                        >
+                        <button 
+                            type="submit"
+                            :disabled="!currentMessage.trim() || isTyping"
+                            class="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                            Send
+                        </button>
+                    </form>
+                    <div class="flex justify-between items-center mt-2 text-xs text-gray-500">
+                        <span>Powered by OpenAI GPT-3.5-turbo (cost-optimized)</span>
+                        <button @click="clearChat()" class="text-red-500 hover:text-red-700">Clear Chat</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Capabilities & Tools -->
+            <div class="space-y-6">
+                
+                <!-- AI Capabilities -->
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">🧠</span>
+                        AI Capabilities
+                    </h3>
+                    <ul class="space-y-2">
+                        <template x-for="capability in industryCapabilities" :key="capability">
+                            <li class="flex items-center text-sm text-gray-700">
+                                <span class="w-2 h-2 bg-green-500 rounded-full mr-3"></span>
+                                <span x-text="capability"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">⚡</span>
+                        Quick Actions
+                    </h3>
+                    <div class="space-y-3">
+                        <button @click="quickAction('help')" class="w-full text-left p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors">
+                            <div class="font-semibold text-blue-800">Get Help</div>
+                            <div class="text-xs text-blue-600">Ask for assistance</div>
+                        </button>
+                        <button @click="quickAction('diagnose')" class="w-full text-left p-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors">
+                            <div class="font-semibold text-green-800">Diagnose Problem</div>
+                            <div class="text-xs text-green-600">Troubleshoot issues</div>
+                        </button>
+                        <button @click="quickAction('optimize')" class="w-full text-left p-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition-colors">
+                            <div class="font-semibold text-purple-800">Optimize Operations</div>
+                            <div class="text-xs text-purple-600">Improve efficiency</div>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                        <span class="mr-2">📈</span>
+                        Recent Activity
+                    </h3>
+                    <div class="space-y-3 text-sm">
+                        <template x-for="activity in recentActivity" :key="activity.id">
+                            <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <span x-text="activity.action" class="text-gray-700"></span>
+                                <span x-text="activity.time" class="text-gray-500 text-xs"></span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Industry data injected by server
+        window.industryData = {
+            industry: '{{ industry }}',
+            name: '{{ industry_info.name }}',
+            icon: '{{ industry_info.icon }}',
+            color: '{{ industry_info.color }}',
+            capabilities: {{ industry_info.capabilities | tojson }}
+        };
+        
+        function dashboardApp() {
+            return {
+                currentMessage: '',
+                chatHistory: [],
+                isTyping: false,
+                sessionId: 'dashboard_' + Date.now(),
+                stats: {
+                    activeChats: 1,
+                    avgResponseTime: '1.2s',
+                    dailyQueries: 24,
+                    dailyCost: 0.0000
+                },
+                industryCapabilities: window.industryData ? window.industryData.capabilities : [],
+                recentActivity: [
+                    { id: 1, action: 'AI assistant initialized', time: 'just now' },
+                    { id: 2, action: 'Dashboard loaded', time: '1m ago' },
+                    { id: 3, action: 'System optimized', time: '5m ago' }
+                ],
+                
+                initDashboard() {
+                    // Add welcome message
+                    const industryName = window.industryData ? window.industryData.name : 'AI';
+                    this.addMessage('assistant', `Hello! I'm your ${industryName} AI assistant. How can I help you today?`);
+                    
+                    // Update stats periodically
+                    setInterval(() => {
+                        this.updateStats();
+                    }, 5000);
+                },
+                
+                async sendMessage() {
+                    if (!this.currentMessage.trim()) return;
+                    
+                    const userMessage = this.currentMessage;
+                    this.currentMessage = '';
+                    
+                    // Add user message
+                    this.addMessage('user', userMessage);
+                    
+                    // Show typing indicator
+                    this.isTyping = true;
+                    this.scrollToBottom();
+                    
+                    try {
+                        const industry = window.industryData ? window.industryData.industry : 'home-repair';
+                        const response = await fetch(`/api/chat/${industry}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                message: userMessage,
+                                session_id: this.sessionId
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            this.addMessage('assistant', data.response);
+                            this.updateCostStats(data.estimated_cost || 0);
+                            this.stats.dailyQueries++;
+                        } else {
+                            this.addMessage('assistant', 'Sorry, I encountered an error. Please try again.');
+                        }
+                        
+                    } catch (error) {
+                        console.error('Chat error:', error);
+                        this.addMessage('assistant', 'Connection error. Please check your internet connection.');
+                    } finally {
+                        this.isTyping = false;
+                        this.scrollToBottom();
+                    }
+                },
+                
+                addMessage(role, content) {
+                    this.chatHistory.push({
+                        role: role,
+                        content: content,
+                        timestamp: new Date().toISOString()
+                    });
+                    this.$nextTick(() => this.scrollToBottom());
+                },
+                
+                scrollToBottom() {
+                    const container = document.getElementById('chatContainer');
+                    container.scrollTop = container.scrollHeight;
+                },
+                
+                formatTime(timestamp) {
+                    return new Date(timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                },
+                
+                clearChat() {
+                    if (confirm('Clear chat history?')) {
+                        this.chatHistory = [];
+                        this.addMessage('assistant', 'Chat cleared. How can I help you?');
+                    }
+                },
+                
+                quickAction(action) {
+                    const industryName = window.industryData ? window.industryData.name.toLowerCase() : 'business';
+                    const prompts = {
+                        help: `What can you help me with in ${industryName}?`,
+                        diagnose: `How do I diagnose common problems in ${industryName}?`,
+                        optimize: `What are the best ways to optimize ${industryName} operations?`
+                    };
+                    
+                    if (prompts[action]) {
+                        this.currentMessage = prompts[action];
+                        this.sendMessage();
+                    }
+                },
+                
+                updateStats() {
+                    // Simulate real-time stats updates
+                    this.stats.avgResponseTime = (Math.random() * 2 + 0.5).toFixed(1) + 's';
+                },
+                
+                updateCostStats(cost) {
+                    this.stats.dailyCost += cost;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

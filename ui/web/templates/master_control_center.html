@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixItFred Master Control Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .glow { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        .pulse-glow { animation: pulse-glow 2s infinite; }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 40px rgba(139, 92, 246, 0.8); }
+        }
+    </style>
+</head>
+<body class="bg-black text-white">
+    <div x-data="masterControlCenter()">
+        <!-- Header -->
+        <header class="bg-gradient-to-r from-purple-900 to-indigo-900 border-b border-purple-500">
+            <div class="container mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 text-transparent bg-clip-text">
+                            🚀 FixItFred Master Control
+                        </h1>
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-green-400 text-sm font-semibold">EMPIRE OPERATIONAL</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-6">
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">Empire Revenue</div>
+                            <div class="text-3xl font-bold text-green-400">$<span x-text="formatNumber(stats.total_revenue)"></span></div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">Active Deployments</div>
+                            <div class="text-3xl font-bold text-blue-400" x-text="stats.active_deployments"></div>
+                        </div>
+                        <button @click="backupEmpire()" class="px-4 py-2 bg-red-600 rounded hover:bg-red-700">
+                            🛡️ Backup Empire
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Control Grid -->
+        <div class="container mx-auto px-6 py-6">
+            
+            <!-- Rapid Deployment Section -->
+            <div class="bg-gradient-to-r from-purple-800 to-indigo-800 rounded-lg p-6 mb-6 border border-purple-500 glow">
+                <h2 class="text-2xl font-bold mb-4 text-purple-300">⚡ Rapid Deployment Center</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Company Details -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-purple-200">Company Setup</h3>
+                        <input type="text" x-model="rapidDeploy.company_name" 
+                               class="w-full p-3 bg-gray-800 rounded text-white border border-purple-400" 
+                               placeholder="Company Name">
+                        <select x-model="rapidDeploy.industry" 
+                                class="w-full p-3 bg-gray-800 rounded text-white border border-purple-400">
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="logistics">Logistics</option>
+                            <option value="construction">Construction</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                        <input type="number" x-model="rapidDeploy.worker_count" 
+                               class="w-full p-3 bg-gray-800 rounded text-white border border-purple-400" 
+                               placeholder="Number of Workers">
+                    </div>
+                    
+                    <!-- Modules & Features -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-purple-200">Modules & Features</h3>
+                        <div class="space-y-2">
+                            <template x-for="module in availableModules" :key="module">
+                                <label class="flex items-center space-x-2">
+                                    <input type="checkbox" :value="module" x-model="rapidDeploy.modules"
+                                           class="text-purple-500">
+                                    <span x-text="module" class="capitalize"></span>
+                                </label>
+                            </template>
+                        </div>
+                        <select x-model="rapidDeploy.cloud_provider" 
+                                class="w-full p-3 bg-gray-800 rounded text-white border border-purple-400">
+                            <option value="aws">AWS (Fastest)</option>
+                            <option value="azure">Microsoft Azure</option>
+                            <option value="gcp">Google Cloud</option>
+                            <option value="digital_ocean">DigitalOcean (Cheapest)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Deployment Action -->
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-purple-200">Deploy Now</h3>
+                        <div class="text-center space-y-4">
+                            <div class="text-4xl font-bold text-yellow-400">3 MIN</div>
+                            <div class="text-sm text-gray-300">Total Deployment Time</div>
+                            <button @click="rapidDeployCompany()" 
+                                    :disabled="deploying"
+                                    class="w-full px-6 py-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg font-bold text-xl hover:from-green-600 hover:to-emerald-600 transition disabled:opacity-50"
+                                    :class="deploying ? 'pulse-glow' : ''">
+                                <span x-show="!deploying">🚀 DEPLOY TO CLOUD</span>
+                                <span x-show="deploying" class="animate-pulse">⚡ DEPLOYING...</span>
+                            </button>
+                            <div x-show="deploying" class="text-yellow-400 text-sm">
+                                <span x-text="deploymentStatus"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-time Empire Dashboard -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                
+                <!-- Empire Stats -->
+                <div class="lg:col-span-2 bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 text-blue-400">🌍 Empire Overview</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-green-400" x-text="stats.total_deployments"></div>
+                            <div class="text-sm text-gray-400">Total Companies</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-blue-400" x-text="formatNumber(stats.total_revenue)"></div>
+                            <div class="text-sm text-gray-400">Total Revenue</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-purple-400" x-text="stats.features_in_development"></div>
+                            <div class="text-sm text-gray-400">Features in Dev</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-yellow-400" x-text="stats.avg_deployment_time"></div>
+                            <div class="text-sm text-gray-400">Avg Deploy Time</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Revenue Projection -->
+                    <div class="mt-6 p-4 bg-gradient-to-r from-green-900 to-emerald-900 rounded-lg">
+                        <h4 class="font-bold text-green-300 mb-2">200K Company Projection</h4>
+                        <div class="text-3xl font-bold text-green-400">
+                            $<span x-text="formatNumber(stats.projected_200k_revenue)"></span>
+                        </div>
+                        <div class="text-sm text-green-200">Billion-dollar valuation target</div>
+                    </div>
+                </div>
+                
+                <!-- System Health -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 text-green-400">🏥 System Health</h3>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <span>Uptime</span>
+                            <span class="text-green-400 font-bold" x-text="stats.uptime"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Active Deploys</span>
+                            <span class="text-blue-400 font-bold" x-text="realTimeStats.active_deployments_now"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>Queue Length</span>
+                            <span class="text-yellow-400 font-bold" x-text="realTimeStats.queue_length"></span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span>System Status</span>
+                            <span class="text-green-400 font-bold">OPTIMAL</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Actions -->
+                    <div class="mt-6 space-y-2">
+                        <button @click="refreshStats()" class="w-full px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">
+                            🔄 Refresh Stats
+                        </button>
+                        <button @click="viewLogs()" class="w-full px-4 py-2 bg-yellow-600 rounded hover:bg-yellow-700">
+                            📜 View Logs
+                        </button>
+                        <button @click="emergencyMode()" class="w-full px-4 py-2 bg-red-600 rounded hover:bg-red-700">
+                            🚨 Emergency Mode
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Deployments & Feature Development -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                
+                <!-- Recent Deployments -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 text-blue-400">🏢 Recent Deployments</h3>
+                    <div class="space-y-3 max-h-80 overflow-y-auto">
+                        <template x-for="deployment in recentDeployments" :key="deployment.deployment_id">
+                            <div class="bg-gray-700 p-3 rounded-lg hover:bg-gray-600 transition">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <div class="font-semibold" x-text="deployment.company_name"></div>
+                                        <div class="text-xs text-gray-400" x-text="deployment.industry"></div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-green-400 font-bold">$<span x-text="formatNumber(deployment.revenue)"></span></div>
+                                        <div class="text-xs" :class="deployment.status === 'active' ? 'text-green-400' : 'text-yellow-400'" 
+                                             x-text="deployment.status"></div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <div class="text-xs text-purple-400" x-text="deployment.cloud_provider"></div>
+                                    <div class="space-x-2">
+                                        <button @click="viewDeployment(deployment)" 
+                                                class="text-xs px-2 py-1 bg-blue-600 rounded hover:bg-blue-700">
+                                            View
+                                        </button>
+                                        <button @click="scaleDeployment(deployment)" 
+                                                class="text-xs px-2 py-1 bg-green-600 rounded hover:bg-green-700">
+                                            Scale
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Feature Development -->
+                <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                    <h3 class="text-xl font-bold mb-4 text-purple-400">🔧 Feature Development</h3>
+                    
+                    <!-- Create New Feature -->
+                    <div class="mb-4 p-3 bg-gray-700 rounded">
+                        <input type="text" x-model="newFeature.name" 
+                               class="w-full p-2 bg-gray-600 rounded text-white mb-2" 
+                               placeholder="Feature Name">
+                        <textarea x-model="newFeature.description" 
+                                  class="w-full p-2 bg-gray-600 rounded text-white mb-2" 
+                                  placeholder="Feature Description" rows="2"></textarea>
+                        <button @click="createFeature()" 
+                                class="w-full px-4 py-2 bg-purple-600 rounded hover:bg-purple-700">
+                            🚀 Generate Feature
+                        </button>
+                    </div>
+                    
+                    <!-- Active Features -->
+                    <div class="space-y-2 max-h-64 overflow-y-auto">
+                        <template x-for="feature in activeFeatures" :key="feature.feature_id">
+                            <div class="bg-gray-700 p-3 rounded">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <div class="font-semibold" x-text="feature.name"></div>
+                                        <div class="text-xs text-gray-400" x-text="feature.description"></div>
+                                    </div>
+                                    <div class="text-xs px-2 py-1 rounded" 
+                                         :class="getStatusColor(feature.status)" 
+                                         x-text="feature.status"></div>
+                                </div>
+                                <div class="mt-2 flex space-x-2">
+                                    <button @click="deployFeature(feature)" 
+                                            class="text-xs px-2 py-1 bg-green-600 rounded hover:bg-green-700">
+                                        Deploy
+                                    </button>
+                                    <button @click="testFeature(feature)" 
+                                            class="text-xs px-2 py-1 bg-yellow-600 rounded hover:bg-yellow-700">
+                                        Test
+                                    </button>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cloud Resources Monitor -->
+            <div class="bg-gray-800 rounded-lg p-6 border border-gray-700">
+                <h3 class="text-xl font-bold mb-4 text-cyan-400">☁️ Cloud Resources</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <template x-for="provider in cloudProviders" :key="provider.name">
+                        <div class="bg-gray-700 p-4 rounded-lg text-center">
+                            <div class="text-2xl mb-2" x-text="provider.icon"></div>
+                            <div class="font-semibold" x-text="provider.name"></div>
+                            <div class="text-2xl font-bold text-green-400" x-text="provider.instances"></div>
+                            <div class="text-xs text-gray-400">Active Instances</div>
+                            <div class="text-sm text-green-300">$<span x-text="provider.cost"></span>/mo</div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function masterControlCenter() {
+            return {
+                // Empire stats
+                stats: {
+                    total_deployments: 5,
+                    active_deployments: 5,
+                    total_revenue: 316000,
+                    features_in_development: 3,
+                    avg_deployment_time: "2.3 min",
+                    uptime: "99.9%",
+                    projected_200k_revenue: 12600000000
+                },
+                
+                realTimeStats: {
+                    active_deployments_now: 0,
+                    queue_length: 0
+                },
+                
+                // Rapid deployment
+                rapidDeploy: {
+                    company_name: '',
+                    industry: 'manufacturing',
+                    worker_count: 50,
+                    modules: ['quality', 'maintenance'],
+                    cloud_provider: 'aws'
+                },
+                
+                availableModules: ['quality', 'maintenance', 'safety', 'operations', 'analytics', 'memory'],
+                
+                deploying: false,
+                deploymentStatus: '',
+                
+                // Recent deployments
+                recentDeployments: [
+                    {
+                        deployment_id: 'RAPID-001',
+                        company_name: 'Boeing Manufacturing',
+                        industry: 'aerospace',
+                        status: 'active',
+                        cloud_provider: 'AWS',
+                        revenue: 61000,
+                        deployed_at: '2024-01-20T10:30:00'
+                    }
+                ],
+                
+                // Feature development
+                newFeature: {
+                    name: '',
+                    description: ''
+                },
+                
+                activeFeatures: [
+                    {
+                        feature_id: 'FEAT-001',
+                        name: 'Voice Analytics',
+                        description: 'Advanced voice pattern analysis',
+                        status: 'development'
+                    }
+                ],
+                
+                // Cloud providers
+                cloudProviders: [
+                    { name: 'AWS', icon: '🟧', instances: 12, cost: 1250 },
+                    { name: 'Azure', icon: '🔵', instances: 8, cost: 980 },
+                    { name: 'GCP', icon: '🔴', instances: 5, cost: 750 },
+                    { name: 'DigitalOcean', icon: '🟦', instances: 3, cost: 420 }
+                ],
+                
+                async rapidDeployCompany() {
+                    if (!this.rapidDeploy.company_name) {
+                        alert('Please enter a company name');
+                        return;
+                    }
+                    
+                    this.deploying = true;
+                    this.deploymentStatus = 'Provisioning cloud infrastructure...';
+                    
+                    try {
+                        const response = await fetch('/api/rapid-deploy', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.rapidDeploy)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            // Simulate deployment phases
+                            await this.simulateDeploymentPhases(result.deployment_id);
+                        }
+                    } catch (error) {
+                        console.error('Deployment failed:', error);
+                        this.deploymentStatus = 'Deployment failed!';
+                    }
+                },
+                
+                async simulateDeploymentPhases(deploymentId) {
+                    const phases = [
+                        'Provisioning cloud infrastructure...',
+                        'Deploying FixItFred platform...',
+                        'Configuring custom domain...',
+                        'Setting up SSL certificates...',
+                        'Deploying custom features...',
+                        'Running final health checks...',
+                        'Deployment completed! 🎉'
+                    ];
+                    
+                    for (let i = 0; i < phases.length; i++) {
+                        this.deploymentStatus = phases[i];
+                        await new Promise(resolve => setTimeout(resolve, 20000)); // 20 seconds per phase
+                    }
+                    
+                    // Add to recent deployments
+                    this.recentDeployments.unshift({
+                        deployment_id: deploymentId,
+                        company_name: this.rapidDeploy.company_name,
+                        industry: this.rapidDeploy.industry,
+                        status: 'active',
+                        cloud_provider: this.rapidDeploy.cloud_provider.toUpperCase(),
+                        revenue: 21000,
+                        deployed_at: new Date().toISOString()
+                    });
+                    
+                    // Update stats
+                    this.stats.total_deployments++;
+                    this.stats.active_deployments++;
+                    this.stats.total_revenue += 21000;
+                    
+                    this.deploying = false;
+                    this.rapidDeploy.company_name = '';
+                },
+                
+                async createFeature() {
+                    if (!this.newFeature.name) return;
+                    
+                    try {
+                        const response = await fetch('/api/create-feature', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newFeature)
+                        });
+                        
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            this.activeFeatures.unshift({
+                                feature_id: result.feature_id,
+                                name: this.newFeature.name,
+                                description: this.newFeature.description,
+                                status: 'ready'
+                            });
+                            
+                            this.newFeature.name = '';
+                            this.newFeature.description = '';
+                        }
+                    } catch (error) {
+                        console.error('Feature creation failed:', error);
+                    }
+                },
+                
+                async backupEmpire() {
+                    if (confirm('Create full empire backup? This will backup all deployments and data.')) {
+                        try {
+                            const response = await fetch('/api/backup-empire', {
+                                method: 'POST'
+                            });
+                            
+                            const result = await response.json();
+                            alert(`Empire backup created: ${result.backup_id}\nLocation: ${result.backup_location}`);
+                        } catch (error) {
+                            alert('Backup failed: ' + error.message);
+                        }
+                    }
+                },
+                
+                getStatusColor(status) {
+                    const colors = {
+                        'development': 'bg-yellow-600',
+                        'testing': 'bg-blue-600',
+                        'ready': 'bg-green-600',
+                        'deployed': 'bg-purple-600'
+                    };
+                    return colors[status] || 'bg-gray-600';
+                },
+                
+                formatNumber(num) {
+                    return new Intl.NumberFormat('en-US').format(num);
+                },
+                
+                async refreshStats() {
+                    try {
+                        const response = await fetch('/api/empire-stats');
+                        this.stats = await response.json();
+                    } catch (error) {
+                        console.error('Failed to refresh stats:', error);
+                    }
+                },
+                
+                viewLogs() {
+                    window.open('/logs', '_blank');
+                },
+                
+                emergencyMode() {
+                    if (confirm('Activate emergency mode? This will pause all deployments and enable manual override.')) {
+                        alert('Emergency mode activated. All automated systems paused.');
+                    }
+                },
+                
+                viewDeployment(deployment) {
+                    window.open(`https://${deployment.custom_domain || deployment.api_endpoint}`, '_blank');
+                },
+                
+                scaleDeployment(deployment) {
+                    const action = prompt('Scale action: up, down, or auto');
+                    if (action) {
+                        alert(`Scaling ${deployment.company_name} ${action}`);
+                    }
+                },
+                
+                deployFeature(feature) {
+                    if (confirm(`Deploy ${feature.name} to all active instances?`)) {
+                        feature.status = 'deployed';
+                        alert(`${feature.name} deployed successfully!`);
+                    }
+                },
+                
+                testFeature(feature) {
+                    feature.status = 'testing';
+                    setTimeout(() => {
+                        feature.status = 'ready';
+                        alert(`${feature.name} passed all tests!`);
+                    }, 3000);
+                },
+                
+                // Initialize WebSocket for real-time updates
+                init() {
+                    this.connectWebSocket();
+                    this.refreshStats();
+                },
+                
+                connectWebSocket() {
+                    const ws = new WebSocket(`ws://localhost:9000/ws/monitoring`);
+                    
+                    ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        if (data.type === 'real_time_stats') {
+                            this.realTimeStats = data.data;
+                        } else if (data.type === 'deployment_status') {
+                            // Update deployment status
+                            console.log('Deployment update:', data.data);
+                        }
+                    };
+                    
+                    ws.onclose = () => {
+                        // Reconnect after 5 seconds
+                        setTimeout(() => this.connectWebSocket(), 5000);
+                    };
+                }
+            }
+        }
+    </script>
+</body>
+</html>

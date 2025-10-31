@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integration Hub - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - Integration Hub</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200">Modules</a>
+                <a href="/clients" class="hover:text-blue-200">Clients</a>
+                <a href="/deploy" class="hover:text-blue-200">Deploy</a>
+                <a href="/integrations" class="hover:text-blue-200 font-bold">Integrations</a>
+                <a href="/ai-tuning" class="hover:text-blue-200">AI Tuning</a>
+                <a href="/analytics" class="hover:text-blue-200">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4" x-data="integrationHub()">
+        <!-- Integration Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Active Integrations</h3>
+                <p class="text-3xl font-bold text-blue-600" x-text="overview.active_integrations"></p>
+                <p class="text-sm text-blue-600">🔗 Connected systems</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Data Synced Today</h3>
+                <p class="text-3xl font-bold text-green-600" x-text="overview.records_synced"></p>
+                <p class="text-sm text-green-600">📊 Records processed</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">System Types</h3>
+                <p class="text-3xl font-bold text-purple-600" x-text="overview.system_types"></p>
+                <p class="text-sm text-purple-600">🏢 ERP, CRM, MES, IoT</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Success Rate</h3>
+                <p class="text-3xl font-bold text-orange-600" x-text="overview.success_rate + '%'"></p>
+                <p class="text-sm text-orange-600">✅ Sync reliability</p>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-gradient-to-r from-green-500 to-blue-600 text-white p-8 rounded-lg shadow mb-8">
+            <h2 class="text-3xl font-bold mb-4">🔌 Universal Integration Hub</h2>
+            <p class="text-lg mb-4">Connect ANY system, API, automation, or application to FixItFred during client onboarding.</p>
+            <div class="flex space-x-4">
+                <button @click="showNewIntegration = true" class="bg-white text-blue-600 px-6 py-2 rounded-lg font-semibold hover:bg-gray-100">
+                    ➕ Add Integration
+                </button>
+                <button @click="showTemplates = true" class="bg-transparent border-2 border-white px-6 py-2 rounded-lg font-semibold hover:bg-white hover:text-blue-600">
+                    📋 Use Template
+                </button>
+            </div>
+        </div>
+
+        <!-- Integration Templates -->
+        <div x-show="showTemplates" class="bg-white p-6 rounded-lg shadow mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">📋 Pre-Built Integration Templates</h3>
+                <button @click="showTemplates = false" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- ERP Templates -->
+                <div class="border rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-600 mb-3">🏢 ERP Systems</h4>
+                    <div class="space-y-2">
+                        <template x-for="system in templates.erp" :key="system.name">
+                            <button @click="useTemplate(system)" 
+                                    class="w-full text-left p-2 rounded hover:bg-blue-50 border">
+                                <div class="font-medium" x-text="system.name"></div>
+                                <div class="text-xs text-gray-600" x-text="system.auth_type + ' authentication'"></div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- CRM Templates -->
+                <div class="border rounded-lg p-4">
+                    <h4 class="font-semibold text-green-600 mb-3">📊 CRM Systems</h4>
+                    <div class="space-y-2">
+                        <template x-for="system in templates.crm" :key="system.name">
+                            <button @click="useTemplate(system)" 
+                                    class="w-full text-left p-2 rounded hover:bg-green-50 border">
+                                <div class="font-medium" x-text="system.name"></div>
+                                <div class="text-xs text-gray-600" x-text="system.auth_type + ' authentication'"></div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+                
+                <!-- Automation Templates -->
+                <div class="border rounded-lg p-4">
+                    <h4 class="font-semibold text-purple-600 mb-3">🤖 Automation</h4>
+                    <div class="space-y-2">
+                        <template x-for="system in templates.automation" :key="system.name">
+                            <button @click="useTemplate(system)" 
+                                    class="w-full text-left p-2 rounded hover:bg-purple-50 border">
+                                <div class="font-medium" x-text="system.name"></div>
+                                <div class="text-xs text-gray-600">Webhook integration</div>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Create New Integration -->
+        <div x-show="showNewIntegration" class="bg-white p-6 rounded-lg shadow mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">➕ Create Custom Integration</h3>
+                <button @click="showNewIntegration = false" class="text-gray-500 hover:text-gray-700">✕</button>
+            </div>
+            
+            <form @submit.prevent="createIntegration()">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Basic Information -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold">Basic Information</h4>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Integration Name</label>
+                            <input type="text" x-model="newIntegration.name" class="w-full p-2 border rounded-lg" 
+                                   placeholder="My ERP System">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">System Type</label>
+                            <select x-model="newIntegration.system_type" class="w-full p-2 border rounded-lg">
+                                <option value="">Select system type...</option>
+                                <option value="erp">ERP (Enterprise Resource Planning)</option>
+                                <option value="crm">CRM (Customer Relationship Management)</option>
+                                <option value="mes">MES (Manufacturing Execution System)</option>
+                                <option value="plm">PLM (Product Lifecycle Management)</option>
+                                <option value="iot">IoT (Internet of Things)</option>
+                                <option value="automation">Automation Platform</option>
+                                <option value="database">Database</option>
+                                <option value="api">Custom API</option>
+                                <option value="webhook">Webhook</option>
+                                <option value="file">File System</option>
+                                <option value="custom">Custom System</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Description</label>
+                            <textarea x-model="newIntegration.description" class="w-full p-2 border rounded-lg h-20" 
+                                      placeholder="Describe what this integration does..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- Endpoint Configuration -->
+                    <div class="space-y-4">
+                        <h4 class="font-semibold">API Endpoint Configuration</h4>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Base URL</label>
+                            <input type="url" x-model="newIntegration.url" class="w-full p-2 border rounded-lg" 
+                                   placeholder="https://api.yoursystem.com">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">HTTP Method</label>
+                                <select x-model="newIntegration.method" class="w-full p-2 border rounded-lg">
+                                    <option value="GET">GET</option>
+                                    <option value="POST">POST</option>
+                                    <option value="PUT">PUT</option>
+                                    <option value="PATCH">PATCH</option>
+                                    <option value="DELETE">DELETE</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Data Format</label>
+                                <select x-model="newIntegration.data_format" class="w-full p-2 border rounded-lg">
+                                    <option value="json">JSON</option>
+                                    <option value="xml">XML</option>
+                                    <option value="csv">CSV</option>
+                                    <option value="form">Form Data</option>
+                                    <option value="custom">Custom</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Authentication Type</label>
+                            <select x-model="newIntegration.auth_type" class="w-full p-2 border rounded-lg">
+                                <option value="none">No Authentication</option>
+                                <option value="api_key">API Key</option>
+                                <option value="bearer">Bearer Token</option>
+                                <option value="basic">Basic Auth (Username/Password)</option>
+                                <option value="oauth2">OAuth 2.0</option>
+                                <option value="custom">Custom Headers</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Authentication Details -->
+                        <div x-show="newIntegration.auth_type === 'api_key'">
+                            <label class="block text-sm font-medium mb-2">API Key</label>
+                            <input type="password" x-model="newIntegration.api_key" class="w-full p-2 border rounded-lg" 
+                                   placeholder="Your API key">
+                        </div>
+                        
+                        <div x-show="newIntegration.auth_type === 'bearer'">
+                            <label class="block text-sm font-medium mb-2">Bearer Token</label>
+                            <input type="password" x-model="newIntegration.bearer_token" class="w-full p-2 border rounded-lg" 
+                                   placeholder="Your bearer token">
+                        </div>
+                        
+                        <div x-show="newIntegration.auth_type === 'basic'" class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Username</label>
+                                <input type="text" x-model="newIntegration.username" class="w-full p-2 border rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Password</label>
+                                <input type="password" x-model="newIntegration.password" class="w-full p-2 border rounded-lg">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Data Mapping -->
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4">Data Mapping to FixItFred Modules</h4>
+                    <div class="space-y-3">
+                        <template x-for="(mapping, index) in newIntegration.data_mappings" :key="index">
+                            <div class="grid grid-cols-4 gap-3 items-center">
+                                <input type="text" x-model="mapping.source_field" class="p-2 border rounded" 
+                                       placeholder="Source field name">
+                                <select x-model="mapping.target_module" class="p-2 border rounded">
+                                    <option value="">Target module...</option>
+                                    <option value="quality">Quality Control</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="safety">Safety</option>
+                                    <option value="operations">Operations</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="hr">HR</option>
+                                </select>
+                                <input type="text" x-model="mapping.target_field" class="p-2 border rounded" 
+                                       placeholder="Target field name">
+                                <button @click="newIntegration.data_mappings.splice(index, 1)" 
+                                        class="bg-red-500 text-white px-2 py-1 rounded text-sm">Remove</button>
+                            </div>
+                        </template>
+                        <button @click="addDataMapping()" type="button" 
+                                class="bg-green-500 text-white px-4 py-2 rounded text-sm">
+                            + Add Data Mapping
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Sync Frequency -->
+                <div class="mt-6">
+                    <h4 class="font-semibold mb-4">Sync Settings</h4>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Sync Frequency</label>
+                            <select x-model="newIntegration.frequency" class="w-full p-2 border rounded-lg">
+                                <option value="on_demand">On Demand</option>
+                                <option value="real_time">Real-time (Webhook)</option>
+                                <option value="hourly">Every Hour</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" x-model="newIntegration.enabled" class="mr-2">
+                            <label class="text-sm">Enable integration immediately</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex space-x-4 mt-6">
+                    <button type="button" @click="testIntegration()" 
+                            class="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700">
+                        🧪 Test Connection
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                        💾 Save Integration
+                    </button>
+                </div>
+            </form>
+            
+            <!-- Test Results -->
+            <div x-show="testResults" class="mt-4 p-4 border rounded-lg" 
+                 :class="testResults?.success ? 'border-green-400 bg-green-50' : 'border-red-400 bg-red-50'">
+                <h5 class="font-medium" :class="testResults?.success ? 'text-green-800' : 'text-red-800'">
+                    Test Results
+                </h5>
+                <pre class="text-sm mt-2" x-text="JSON.stringify(testResults, null, 2)"></pre>
+            </div>
+        </div>
+
+        <!-- Active Integrations -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 class="text-xl font-bold mb-4">🔗 Active Integrations</h3>
+            
+            <div class="space-y-4">
+                <template x-for="integration in activeIntegrations" :key="integration.id">
+                    <div class="border rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h4 class="font-semibold" x-text="integration.name"></h4>
+                                <p class="text-sm text-gray-600" x-text="integration.description"></p>
+                                <div class="flex items-center mt-2 space-x-4">
+                                    <span class="text-xs px-2 py-1 rounded" 
+                                          :class="integration.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+                                          x-text="integration.status"></span>
+                                    <span class="text-xs text-gray-500" x-text="integration.system_type.toUpperCase()"></span>
+                                    <span class="text-xs text-gray-500">Last sync: <span x-text="integration.last_sync"></span></span>
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button @click="syncIntegration(integration.id)" 
+                                        class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                                    🔄 Sync Now
+                                </button>
+                                <button @click="editIntegration(integration.id)" 
+                                        class="bg-gray-500 text-white px-3 py-1 rounded text-sm hover:bg-gray-600">
+                                    ✏️ Edit
+                                </button>
+                                <button @click="deleteIntegration(integration.id)" 
+                                        class="bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-600">
+                                    🗑️ Delete
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Integration Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 pt-3 border-t">
+                            <div>
+                                <span class="text-sm font-medium">Endpoints: </span>
+                                <span class="text-sm" x-text="integration.endpoints?.length || 0"></span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium">Data Mappings: </span>
+                                <span class="text-sm" x-text="integration.data_mappings?.length || 0"></span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium">Sync Count: </span>
+                                <span class="text-sm" x-text="integration.sync_count || 0"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+                
+                <div x-show="activeIntegrations.length === 0" class="text-center py-8 text-gray-500">
+                    No integrations configured yet. Click "Add Integration" to get started.
+                </div>
+            </div>
+        </div>
+
+        <!-- Integration Analytics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Sync Performance -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">📊 Sync Performance</h3>
+                <canvas id="syncChart" width="400" height="200"></canvas>
+            </div>
+            
+            <!-- System Distribution -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">🏢 Connected Systems</h3>
+                <div class="space-y-3">
+                    <template x-for="(count, type) in systemDistribution" :key="type">
+                        <div class="flex justify-between items-center">
+                            <span class="capitalize" x-text="type + ' Systems'"></span>
+                            <div class="flex items-center">
+                                <div class="w-20 bg-gray-200 rounded-full h-2 mr-3">
+                                    <div class="bg-blue-600 h-2 rounded-full" 
+                                         :style="`width: ${(count / Math.max(...Object.values(systemDistribution))) * 100}%`"></div>
+                                </div>
+                                <span class="font-medium" x-text="count"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function integrationHub() {
+            return {
+                overview: {
+                    active_integrations: 8,
+                    records_synced: '47,392',
+                    system_types: 5,
+                    success_rate: 98.7
+                },
+                
+                showTemplates: false,
+                showNewIntegration: false,
+                testResults: null,
+                
+                templates: {
+                    erp: [
+                        {name: 'SAP', auth_type: 'oauth2', system_type: 'erp'},
+                        {name: 'Oracle', auth_type: 'basic', system_type: 'erp'},
+                        {name: 'Microsoft Dynamics', auth_type: 'oauth2', system_type: 'erp'},
+                        {name: 'NetSuite', auth_type: 'oauth2', system_type: 'erp'}
+                    ],
+                    crm: [
+                        {name: 'Salesforce', auth_type: 'oauth2', system_type: 'crm'},
+                        {name: 'HubSpot', auth_type: 'api_key', system_type: 'crm'},
+                        {name: 'Pipedrive', auth_type: 'api_key', system_type: 'crm'},
+                        {name: 'Zoho CRM', auth_type: 'oauth2', system_type: 'crm'}
+                    ],
+                    automation: [
+                        {name: 'Zapier', auth_type: 'webhook', system_type: 'automation'},
+                        {name: 'Microsoft Power Automate', auth_type: 'oauth2', system_type: 'automation'},
+                        {name: 'IFTTT', auth_type: 'webhook', system_type: 'automation'},
+                        {name: 'Make (Integromat)', auth_type: 'webhook', system_type: 'automation'}
+                    ]
+                },
+                
+                newIntegration: {
+                    name: '',
+                    system_type: '',
+                    description: '',
+                    url: '',
+                    method: 'GET',
+                    data_format: 'json',
+                    auth_type: 'none',
+                    api_key: '',
+                    bearer_token: '',
+                    username: '',
+                    password: '',
+                    frequency: 'on_demand',
+                    enabled: true,
+                    data_mappings: []
+                },
+                
+                activeIntegrations: [
+                    {
+                        id: 'sap_001',
+                        name: 'SAP Production System',
+                        description: 'Main ERP system for production data',
+                        system_type: 'erp',
+                        status: 'active',
+                        last_sync: '2 minutes ago',
+                        endpoints: [{}, {}],
+                        data_mappings: [{}, {}, {}],
+                        sync_count: 247
+                    },
+                    {
+                        id: 'sf_002', 
+                        name: 'Salesforce CRM',
+                        description: 'Customer and sales data integration',
+                        system_type: 'crm',
+                        status: 'active',
+                        last_sync: '5 minutes ago',
+                        endpoints: [{}],
+                        data_mappings: [{}, {}],
+                        sync_count: 189
+                    },
+                    {
+                        id: 'iot_003',
+                        name: 'IoT Sensor Network',
+                        description: 'Real-time sensor data from production floor',
+                        system_type: 'iot',
+                        status: 'active',
+                        last_sync: '30 seconds ago',
+                        endpoints: [{}],
+                        data_mappings: [{}, {}, {}, {}],
+                        sync_count: 1456
+                    }
+                ],
+                
+                systemDistribution: {
+                    erp: 3,
+                    crm: 2,
+                    mes: 1,
+                    iot: 2,
+                    automation: 1
+                },
+                
+                useTemplate(template) {
+                    this.newIntegration.name = template.name + ' Integration';
+                    this.newIntegration.system_type = template.system_type;
+                    this.newIntegration.auth_type = template.auth_type;
+                    this.newIntegration.description = `Integration with ${template.name} system`;
+                    this.showTemplates = false;
+                    this.showNewIntegration = true;
+                },
+                
+                addDataMapping() {
+                    this.newIntegration.data_mappings.push({
+                        source_field: '',
+                        target_module: '',
+                        target_field: ''
+                    });
+                },
+                
+                async testIntegration() {
+                    this.testResults = {
+                        testing: true
+                    };
+                    
+                    // Simulate test
+                    setTimeout(() => {
+                        this.testResults = {
+                            success: true,
+                            response_time: 347,
+                            status_code: 200,
+                            message: 'Connection successful! Data format validated.',
+                            data_preview: 'Sample data retrieved successfully'
+                        };
+                    }, 2000);
+                },
+                
+                async createIntegration() {
+                    alert(`✅ Integration "${this.newIntegration.name}" created successfully!\n\nSystem Type: ${this.newIntegration.system_type}\nAuth: ${this.newIntegration.auth_type}\nMappings: ${this.newIntegration.data_mappings.length}\n\nIntegration is ready for data sync!`);
+                    
+                    // Add to active integrations
+                    this.activeIntegrations.push({
+                        id: 'new_' + Date.now(),
+                        name: this.newIntegration.name,
+                        description: this.newIntegration.description,
+                        system_type: this.newIntegration.system_type,
+                        status: 'active',
+                        last_sync: 'Never',
+                        endpoints: [{}],
+                        data_mappings: this.newIntegration.data_mappings,
+                        sync_count: 0
+                    });
+                    
+                    // Reset form
+                    this.newIntegration = {
+                        name: '', system_type: '', description: '', url: '', method: 'GET',
+                        data_format: 'json', auth_type: 'none', frequency: 'on_demand',
+                        enabled: true, data_mappings: []
+                    };
+                    this.showNewIntegration = false;
+                },
+                
+                syncIntegration(id) {
+                    const integration = this.activeIntegrations.find(i => i.id === id);
+                    if (integration) {
+                        integration.last_sync = 'Syncing...';
+                        setTimeout(() => {
+                            integration.last_sync = 'Just now';
+                            integration.sync_count += 1;
+                            alert(`✅ Sync completed for ${integration.name}!\n\nRecords processed: 127\nModules updated: Quality, Operations\nNext sync: Scheduled for 1 hour`);
+                        }, 2000);
+                    }
+                },
+                
+                editIntegration(id) {
+                    alert('Edit integration feature - would open detailed configuration panel');
+                },
+                
+                deleteIntegration(id) {
+                    if (confirm('Are you sure you want to delete this integration?')) {
+                        this.activeIntegrations = this.activeIntegrations.filter(i => i.id !== id);
+                    }
+                }
+            }
+        }
+        
+        // Initialize sync performance chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('syncChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['6h ago', '5h ago', '4h ago', '3h ago', '2h ago', '1h ago', 'Now'],
+                    datasets: [{
+                        label: 'Records Synced',
+                        data: [1200, 1350, 1100, 1500, 1300, 1450, 1600],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .btn-gradient {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        .btn-gradient:hover {
+            background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-white to-cyan-50 min-h-screen">
+    <!-- Enhanced Navigation -->
+    <nav class="gradient-bg border-b border-blue-300/20 sticky top-0 z-50 shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-3">
+                        <!-- Fred Character Logo -->
+                        <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                            <svg viewBox="0 0 48 48" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Fred's Face Background -->
+                                <circle cx="24" cy="20" r="16" fill="#FFB366" stroke="#E6A85C" stroke-width="1"/>
+                                
+                                <!-- Red Frizzy Hair -->
+                                <path d="M12 12 Q8 8 10 6 Q12 4 16 6 Q20 2 24 4 Q28 2 32 6 Q36 4 38 6 Q40 8 36 12" 
+                                      fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                <path d="M14 10 Q12 6 16 8 Q18 4 22 6 Q26 4 30 6 Q34 4 36 8 Q38 10 34 12" 
+                                      fill="#EF4444" stroke="#DC2626" stroke-width="0.5"/>
+                                
+                                <!-- Eyes -->
+                                <circle cx="18" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="30" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="18.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                <circle cx="30.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                
+                                <!-- Warm Smile -->
+                                <path d="M16 22 Q24 28 32 22" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                <path d="M18 24 Q24 26 30 24" stroke="#DC2626" stroke-width="1" fill="none" stroke-linecap="round"/>
+                                
+                                <!-- Red Beard -->
+                                <path d="M14 24 Q12 28 14 32 Q16 36 20 34 Q24 38 28 34 Q32 36 34 32 Q36 28 34 24" 
+                                      fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                <path d="M16 26 Q14 30 16 34 Q18 36 22 34 Q26 36 30 34 Q32 36 34 30 Q36 26 34 24" 
+                                      fill="#EF4444" stroke="#DC2626" stroke-width="0.5"/>
+                                
+                                <!-- Overalls (Blue with straps) -->
+                                <rect x="16" y="32" width="16" height="12" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1" rx="2"/>
+                                <rect x="18" y="28" width="3" height="8" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1"/>
+                                <rect x="27" y="28" width="3" height="8" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1"/>
+                                
+                                <!-- Boots -->
+                                <rect x="14" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                <rect x="28" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                
+                                <!-- Tool Belt -->
+                                <rect x="16" y="38" width="16" height="2" fill="#92400E" stroke="#78350F" stroke-width="0.5" rx="1"/>
+                                <circle cx="20" cy="39" r="1" fill="#F59E0B"/>
+                                <circle cx="24" cy="39" r="1" fill="#F59E0B"/>
+                                <circle cx="28" cy="39" r="1" fill="#F59E0B"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-white">FixItFred</span>
+                            <div class="text-xs text-blue-100">AI Maintenance Assistant</div>
+                        </div>
+                    </div>
+                    <div class="px-3 py-1 bg-cyan-500/20 rounded-full border border-cyan-300/30">
+                        <span class="text-xs text-cyan-100 font-semibold">TECHNICAL</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/professional" class="px-4 py-2 hover:bg-white/10 rounded-lg text-white text-sm transition-all duration-200 flex items-center space-x-2">
+                        <span>🏢</span>
+                        <span>Professional</span>
+                    </a>
+                    <a href="http://localhost:9000" target="_blank" class="px-4 py-2 hover:bg-white/10 rounded-lg text-white text-sm transition-all duration-200 flex items-center space-x-2">
+                        <span>🚀</span>
+                        <span>Master Control</span>
+                    </a>
+                    <a href="/" class="px-4 py-2 bg-white/20 rounded-lg text-white text-sm flex items-center space-x-2">
+                        <span>⚙️</span>
+                        <span>Technical</span>
+                    </a>
+                    <a href="/projects" class="px-4 py-2 hover:bg-white/10 rounded-lg text-white text-sm transition-all duration-200 flex items-center space-x-2">
+                        <span>📊</span>
+                        <span>Projects</span>
+                    </a>
+                    <a href="/chat" class="px-4 py-2 hover:bg-white/10 rounded-lg text-white text-sm transition-all duration-200 flex items-center space-x-2">
+                        <span>🤖</span>
+                        <span>AI Chat</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <div class="text-xs text-right">
+                        <div class="text-cyan-300 font-bold text-lg">{{ active_clients }}</div>
+                        <div class="text-blue-100">Active Clients</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Section with Fred -->
+    <div class="bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-700 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-center space-x-8">
+                <div class="text-center">
+                    <h1 class="text-4xl font-bold mb-4">Welcome to FixItFred!</h1>
+                    <p class="text-xl text-blue-100 mb-6">Your AI-powered business platform builder</p>
+                    <div class="flex space-x-4 justify-center">
+                        <a href="/module-builder" class="btn-gradient text-white px-6 py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300">
+                            🛠️ Build a Module
+                        </a>
+                        <a href="/chat" class="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-lg font-semibold hover:bg-white/30 transition-all duration-300">
+                            💬 Chat with Fred
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden lg:block">
+                    <!-- Large Fred Character -->
+                    <div class="w-32 h-32 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center shadow-2xl border border-white/20">
+                        <svg viewBox="0 0 64 64" class="w-28 h-28" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Fred's Face Background -->
+                            <circle cx="32" cy="26" r="20" fill="#FFB366" stroke="#E6A85C" stroke-width="1.5"/>
+                            
+                            <!-- Red Frizzy Hair -->
+                            <path d="M16 14 Q12 10 14 8 Q16 6 20 8 Q24 4 28 6 Q32 4 36 8 Q40 6 42 8 Q44 10 40 14" 
+                                  fill="#DC2626" stroke="#B91C1C" stroke-width="1.5"/>
+                            <path d="M18 12 Q16 8 20 10 Q22 6 26 8 Q30 6 34 8 Q38 6 40 10 Q42 12 38 14" 
+                                  fill="#EF4444" stroke="#DC2626" stroke-width="1"/>
+                            
+                            <!-- Eyes -->
+                            <circle cx="24" cy="20" r="2.5" fill="#1F2937"/>
+                            <circle cx="40" cy="20" r="2.5" fill="#1F2937"/>
+                            <circle cx="24.8" cy="19.2" r="0.8" fill="#FFFFFF"/>
+                            <circle cx="40.8" cy="19.2" r="0.8" fill="#FFFFFF"/>
+                            
+                            <!-- Warm Smile -->
+                            <path d="M22 28 Q32 36 42 28" stroke="#1F2937" stroke-width="3" fill="none" stroke-linecap="round"/>
+                            <path d="M24 30 Q32 34 40 30" stroke="#DC2626" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            
+                            <!-- Red Beard -->
+                            <path d="M18 30 Q16 36 18 42 Q20 46 24 44 Q28 48 32 44 Q36 46 38 42 Q40 36 38 30" 
+                                  fill="#DC2626" stroke="#B91C1C" stroke-width="1.5"/>
+                            <path d="M20 32 Q18 38 20 44 Q22 46 26 44 Q30 46 34 44 Q36 46 38 38 Q40 32 38 30" 
+                                  fill="#EF4444" stroke="#DC2626" stroke-width="1"/>
+                            
+                            <!-- Overalls (Blue with straps) -->
+                            <rect x="22" y="42" width="20" height="16" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5" rx="3"/>
+                            <rect x="24" y="36" width="4" height="10" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5"/>
+                            <rect x="36" y="36" width="4" height="10" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1.5"/>
+                            
+                            <!-- Boots -->
+                            <rect x="18" y="56" width="8" height="6" fill="#1F2937" stroke="#111827" stroke-width="1.5" rx="1.5"/>
+                            <rect x="38" y="56" width="8" height="6" fill="#1F2937" stroke="#111827" stroke-width="1.5" rx="1.5"/>
+                            
+                            <!-- Tool Belt -->
+                            <rect x="22" y="50" width="20" height="3" fill="#92400E" stroke="#78350F" stroke-width="1" rx="1.5"/>
+                            <circle cx="26" cy="51.5" r="1.5" fill="#F59E0B"/>
+                            <circle cx="32" cy="51.5" r="1.5" fill="#F59E0B"/>
+                            <circle cx="38" cy="51.5" r="1.5" fill="#F59E0B"/>
+                            
+                            <!-- Wrench Tool -->
+                            <rect x="28" y="48" width="8" height="2" fill="#374151" stroke="#1F2937" stroke-width="0.5" rx="1"/>
+                            <rect x="30" y="46" width="4" height="2" fill="#374151" stroke="#1F2937" stroke-width="0.5"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Enhanced Status Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover border-l-4 border-green-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Platform Status</h3>
+                        <p class="text-3xl font-bold text-green-600">{{ platform_status }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">✅</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover border-l-4 border-blue-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Active Clients</h3>
+                        <p class="text-3xl font-bold text-blue-600">{{ active_clients }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">👥</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover border-l-4 border-purple-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Total Modules</h3>
+                        <p class="text-3xl font-bold text-purple-600">{{ total_modules }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">📦</span>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover border-l-4 border-orange-500">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-700 mb-1">Avg Deployment</h3>
+                        <p class="text-3xl font-bold text-orange-600">{{ deployment_time }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">⚡</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Quick Actions -->
+        <div class="bg-white p-8 rounded-xl shadow-lg mb-8 border border-gray-100">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span class="mr-3">🚀</span>
+                Quick Actions
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/deploy" class="btn-gradient text-white p-6 rounded-xl text-center font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-3">
+                    <span class="text-2xl">🚀</span>
+                    <span>Deploy New Client</span>
+                </a>
+                <a href="/modules" class="bg-gradient-to-r from-green-400 to-green-600 text-white p-6 rounded-xl text-center font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-3">
+                    <span class="text-2xl">🔧</span>
+                    <span>Build Custom Module</span>
+                </a>
+                <button onclick="runDemo()" class="bg-gradient-to-r from-purple-400 to-purple-600 text-white p-6 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center space-x-3">
+                    <span class="text-2xl">🎯</span>
+                    <span>Run Live Demo</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Industry-Specific AI Dashboards -->
+        <div class="bg-white p-8 rounded-xl shadow-lg mb-8 border border-gray-100">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span class="mr-3">🏭</span>
+                Specialized AI Assistants
+            </h2>
+            <p class="text-gray-600 mb-6">Click on any industry below to access specialized AI dashboards with tailored bots, tools, and insights for your specific business needs.</p>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Car Repair Card -->
+                <a href="/dashboard/car-repair" class="group bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-xl border border-red-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center group-hover:bg-red-200 transition-colors">
+                            <span class="text-2xl">🚗</span>
+                        </div>
+                        <div class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Car Repair & Auto Service</h3>
+                    <p class="text-gray-600 text-sm mb-4">Diagnostic AI, maintenance scheduling, parts inventory, and customer management for auto repair shops.</p>
+                    <div class="flex items-center text-red-600 font-semibold text-sm">
+                        <span>Access Auto Repair AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Manufacturing Card -->
+                <a href="/dashboard/manufacturing" class="group bg-gradient-to-br from-blue-50 to-indigo-50 p-6 rounded-xl border border-blue-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                            <span class="text-2xl">🏭</span>
+                        </div>
+                        <div class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Manufacturing & Production</h3>
+                    <p class="text-gray-600 text-sm mb-4">Quality control AI, production monitoring, efficiency analytics, and predictive maintenance for factories.</p>
+                    <div class="flex items-center text-blue-600 font-semibold text-sm">
+                        <span>Access Manufacturing AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Healthcare Card -->
+                <a href="/dashboard/healthcare" class="group bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-xl border border-green-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200 transition-colors">
+                            <span class="text-2xl">🏥</span>
+                        </div>
+                        <div class="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Healthcare & Medical</h3>
+                    <p class="text-gray-600 text-sm mb-4">Patient management AI, compliance monitoring, appointment scheduling, and medical record automation.</p>
+                    <div class="flex items-center text-green-600 font-semibold text-sm">
+                        <span>Access Healthcare AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Retail Card -->
+                <a href="/dashboard/retail" class="group bg-gradient-to-br from-purple-50 to-pink-50 p-6 rounded-xl border border-purple-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                            <span class="text-2xl">🛍️</span>
+                        </div>
+                        <div class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Retail & E-commerce</h3>
+                    <p class="text-gray-600 text-sm mb-4">Inventory AI, customer service bots, sales analytics, and personalized shopping experiences.</p>
+                    <div class="flex items-center text-purple-600 font-semibold text-sm">
+                        <span>Access Retail AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Construction Card -->
+                <a href="/dashboard/construction" class="group bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-xl border border-yellow-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center group-hover:bg-yellow-200 transition-colors">
+                            <span class="text-2xl">🏗️</span>
+                        </div>
+                        <div class="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Construction & Building</h3>
+                    <p class="text-gray-600 text-sm mb-4">Project management AI, safety monitoring, equipment tracking, and construction scheduling.</p>
+                    <div class="flex items-center text-yellow-600 font-semibold text-sm">
+                        <span>Access Construction AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+
+                <!-- Logistics Card -->
+                <a href="/dashboard/logistics" class="group bg-gradient-to-br from-teal-50 to-cyan-50 p-6 rounded-xl border border-teal-200 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center group-hover:bg-teal-200 transition-colors">
+                            <span class="text-2xl">🚚</span>
+                        </div>
+                        <div class="text-xs bg-teal-100 text-teal-700 px-2 py-1 rounded-full font-semibold">AI POWERED</div>
+                    </div>
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Logistics & Transportation</h3>
+                    <p class="text-gray-600 text-sm mb-4">Fleet management AI, route optimization, delivery tracking, and supply chain analytics.</p>
+                    <div class="flex items-center text-teal-600 font-semibold text-sm">
+                        <span>Access Logistics AI</span>
+                        <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                        </svg>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        <!-- Enhanced Recent Activity -->
+        <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800 flex items-center">
+                <span class="mr-3">📊</span>
+                Recent Activity
+            </h2>
+            <div class="space-y-4">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-4 hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <span class="text-lg">✅</span>
+                        </div>
+                        <span class="font-medium text-gray-800">Advanced Manufacturing Corp - Quality module deployed</span>
+                    </div>
+                    <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">2 minutes ago</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-100 pb-4 hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span class="text-lg">🛡️</span>
+                        </div>
+                        <span class="font-medium text-gray-800">HealthTech Medical - Safety compliance activated</span>
+                    </div>
+                    <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">15 minutes ago</span>
+                </div>
+                <div class="flex justify-between items-center border-b border-gray-100 pb-4 hover:bg-gray-50 rounded-lg p-3 transition-colors">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+                            <span class="text-lg">⚙️</span>
+                        </div>
+                        <span class="font-medium text-gray-800">RetailMax Corp - Operations module customized</span>
+                    </div>
+                    <span class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">1 hour ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runDemo() {
+            const response = await fetch('/demo_client.py');
+            alert('Demo deployment completed in 0.5 seconds!');
+        }
+        
+        // Auto-refresh status every 30 seconds
+        setInterval(async () => {
+            const response = await fetch('/api/system/status');
+            const status = await response.json();
+            console.log('System status:', status);
+        }, 30000);
+    </script>
+</body>
+</html>

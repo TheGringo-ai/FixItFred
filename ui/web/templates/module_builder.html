@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module Builder - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - Module Builder</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200 font-bold">Modules</a>
+                <a href="/clients" class="hover:text-blue-200">Clients</a>
+                <a href="/deploy" class="hover:text-blue-200">Deploy</a>
+                <a href="/analytics" class="hover:text-blue-200">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4" x-data="moduleBuilder()">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Module Creation Form -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">🛠️ Create Custom Module</h2>
+                <form @submit.prevent="createModule()">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Module Type</label>
+                        <select x-model="moduleType" class="w-full p-2 border rounded-lg">
+                            <option value="">Select module type...</option>
+                            <option value="quality">Quality Control</option>
+                            <option value="maintenance">Maintenance Management</option>
+                            <option value="safety">Safety Compliance</option>
+                            <option value="operations">Operations Management</option>
+                            <option value="finance">Financial Management</option>
+                            <option value="hr">HR Management</option>
+                            <option value="custom">Custom Module</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Target Industry</label>
+                        <select x-model="industry" class="w-full p-2 border rounded-lg">
+                            <option value="">Select industry...</option>
+                            {% for industry in industries %}
+                            <option value="{{ industry }}">{{ industry }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Features (comma-separated)</label>
+                        <textarea x-model="features" class="w-full p-2 border rounded-lg h-20" 
+                                placeholder="real-time monitoring, automated reporting, predictive analytics"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Integrations (comma-separated)</label>
+                        <textarea x-model="integrations" class="w-full p-2 border rounded-lg h-20" 
+                                placeholder="ERP systems, databases, APIs, third-party tools"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">
+                        🚀 Build Module
+                    </button>
+                </form>
+                
+                <div x-show="result" class="mt-4 p-4 bg-green-100 border border-green-400 rounded-lg" x-text="result"></div>
+            </div>
+            
+            <!-- Available Modules -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h2 class="text-xl font-bold mb-4">📦 Available Modules</h2>
+                <div class="space-y-3">
+                    {% for module in modules %}
+                    <div class="border p-4 rounded-lg">
+                        <h3 class="font-semibold">{{ module.name }}</h3>
+                        <p class="text-sm text-gray-600">Industry: {{ module.industry }}</p>
+                        <p class="text-sm">
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                {{ module.status }}
+                            </span>
+                        </p>
+                        <button class="mt-2 bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">
+                            Customize
+                        </button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function moduleBuilder() {
+            return {
+                moduleType: '',
+                industry: '',
+                features: '',
+                integrations: '',
+                result: '',
+                
+                async createModule() {
+                    const formData = new FormData();
+                    formData.append('module_type', this.moduleType);
+                    formData.append('industry', this.industry);
+                    formData.append('features', this.features);
+                    formData.append('integrations', this.integrations);
+                    
+                    try {
+                        const response = await fetch('/api/modules/create', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            this.result = `✅ ${result.message} (ID: ${result.module_id})`;
+                            // Reset form
+                            this.moduleType = '';
+                            this.industry = '';
+                            this.features = '';
+                            this.integrations = '';
+                        } else {
+                            this.result = `❌ Error: ${result.message}`;
+                        }
+                    } catch (error) {
+                        this.result = `❌ Error: ${error.message}`;
+                    }
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Healthcare AI Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .fred-glow { box-shadow: 0 0 20px rgba(59, 130, 246, 0.5); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen" x-data="{ activeTab: 'patients' }">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fred-glow">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                        </div>
+                        <h1 class="text-xl font-bold text-gray-900">FixItFred</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <a href="/" class="text-blue-600 hover:text-blue-800 font-medium">← Back to Main Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="gradient-bg text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="flex justify-center mb-6">
+                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center fred-glow">
+                    <svg class="w-12 h-12 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">🏥 Healthcare AI Assistant</h1>
+            <p class="text-xl opacity-90 max-w-2xl mx-auto">
+                Patient management AI, compliance monitoring, and medical scheduling for healthcare excellence
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button @click="activeTab = 'patients'"
+                            :class="activeTab === 'patients' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        Patient Management
+                    </button>
+                    <button @click="activeTab = 'compliance'"
+                            :class="activeTab === 'compliance' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        Compliance Monitoring
+                    </button>
+                    <button @click="activeTab = 'scheduling'"
+                            :class="activeTab === 'scheduling' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        Medical Scheduling
+                    </button>
+                    <button @click="activeTab = 'ai'"
+                            :class="activeTab === 'ai' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                            class="whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm">
+                        Healthcare AI Chat
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Patient Management Tab -->
+        <div x-show="activeTab === 'patients'" class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Patient Records</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">AI-powered patient data management and health record analysis</p>
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span>Active Patients:</span>
+                            <span class="font-semibold text-blue-600">1,247</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span>Records Updated:</span>
+                            <span class="font-semibold text-green-600">98.5%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Risk Assessment</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Predictive health risk analysis and early intervention alerts</p>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-600">High Risk Patients: <span class="font-semibold text-red-600">23</span></div>
+                        <div class="text-sm text-gray-600">Interventions Today: <span class="font-semibold text-green-600">18</span></div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover">
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900">Treatment Plans</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">AI-optimized treatment recommendations and care coordination</p>
+                    <div class="space-y-2">
+                        <div class="text-sm text-gray-600">Plans Created: <span class="font-semibold text-blue-600">156</span></div>
+                        <div class="text-sm text-gray-600">Success Rate: <span class="font-semibold text-green-600">94%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance Monitoring Tab -->
+        <div x-show="activeTab === 'compliance'" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Regulatory Compliance Status</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="font-medium">HIPAA Compliance</span>
+                            </div>
+                            <span class="text-green-600 font-semibold">98.7%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                                <span class="font-medium">OSHA Standards</span>
+                            </div>
+                            <span class="text-green-600 font-semibold">99.2%</span>
+                        </div>
+                        <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                                <span class="font-medium">Documentation Review</span>
+                            </div>
+                            <span class="text-yellow-600 font-semibold">In Progress</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Compliance Metrics</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="text-center p-4 bg-blue-50 rounded-lg">
+                            <div class="text-2xl font-bold text-blue-600">99.8%</div>
+                            <div class="text-sm text-gray-600">Data Security</div>
+                        </div>
+                        <div class="text-center p-4 bg-green-50 rounded-lg">
+                            <div class="text-2xl font-bold text-green-600">100%</div>
+                            <div class="text-sm text-gray-600">Audit Ready</div>
+                        </div>
+                        <div class="text-center p-4 bg-purple-50 rounded-lg">
+                            <div class="text-2xl font-bold text-purple-600">0</div>
+                            <div class="text-sm text-gray-600">Violations</div>
+                        </div>
+                        <div class="text-center p-4 bg-orange-50 rounded-lg">
+                            <div class="text-2xl font-bold text-orange-600">24/7</div>
+                            <div class="text-sm text-gray-600">Monitoring</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Scheduling Tab -->
+        <div x-show="activeTab === 'scheduling'" class="space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Appointment Optimization</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">No-Show Reduction</span>
+                            <span class="font-semibold text-green-600">-23.5%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-green-600 h-3 rounded-full" style="width: 76.5%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Staff Utilization</span>
+                            <span class="font-semibold text-blue-600">+15.8%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-blue-600 h-3 rounded-full" style="width: 90%"></div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <span class="text-gray-600">Patient Satisfaction</span>
+                            <span class="font-semibold text-purple-600">+12.3%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div class="bg-purple-600 h-3 rounded-full" style="width: 87%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow-md p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-4">Smart Scheduling Features</h3>
+                    <div class="space-y-3">
+                        <div class="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-500">
+                            <p class="text-sm text-blue-800">AI predicts optimal appointment times based on patient history and preferences</p>
+                        </div>
+                        <div class="p-3 bg-green-50 rounded-lg border-l-4 border-green-500">
+                            <p class="text-sm text-green-800">Automated reminders reduce no-shows by 23%</p>
+                        </div>
+                        <div class="p-3 bg-purple-50 rounded-lg border-l-4 border-purple-500">
+                            <p class="text-sm text-purple-800">Intelligent resource allocation maximizes staff efficiency</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Chat Tab -->
+        <div x-show="activeTab === 'ai'" class="space-y-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mr-4 fred-glow">
+                        <svg class="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-gray-900">Healthcare AI Assistant</h3>
+                        <p class="text-gray-600">Expert medical consultant with patient care, compliance, and healthcare management knowledge</p>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-4 mb-4 max-h-96 overflow-y-auto">
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center mr-3 flex-shrink-0">
+                                <span class="text-white text-sm font-bold">F</span>
+                            </div>
+                            <div class="bg-white rounded-lg p-3 shadow-sm">
+                                <p class="text-gray-800">Hello! I'm your Healthcare AI assistant. I can help with patient management, compliance monitoring, medical scheduling, and healthcare operations. How can I assist with your healthcare challenges today?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex space-x-2">
+                    <input type="text" placeholder="Ask about patient care, compliance, scheduling, or healthcare operations..."
+                           class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <button class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                        Send
+                    </button>
+                </div>
+
+                <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <button class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">Patient Care</button>
+                    <button class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">Compliance Issues</button>
+                    <button class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">Staff Scheduling</button>
+                    <button class="px-3 py-2 text-sm bg-gray-100 hover:bg-gray-200 rounded-lg">Risk Assessment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">© 2025 FixItFred - Healthcare AI Excellence</p>
+        </div>
+    </footer>
+
+</body>
+</html>

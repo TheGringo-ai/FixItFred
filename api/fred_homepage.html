@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Fix-It Fred - Your AI Assistant</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            min-height: 100vh;
+            padding: 0;
+        }
+
+        .nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .nav-links a {
+            margin-left: 2rem;
+            color: #333;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover { color: #667eea; }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 3rem 2rem;
+        }
+
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            color: #1a202c;
+            margin-bottom: 1rem;
+            font-weight: 800;
+        }
+
+        .hero .subtitle {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin-bottom: 2rem;
+            font-weight: 400;
+        }
+
+        .hero .description {
+            font-size: 1.1rem;
+            color: #718096;
+            max-width: 800px;
+            margin: 0 auto 2rem;
+            line-height: 1.8;
+        }
+
+        .interactive-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        }
+
+        .section-title {
+            font-size: 2rem;
+            color: #1a202c;
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .input-group {
+            margin-bottom: 2rem;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem 1.5rem;
+            font-size: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            background: white;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea.input-field {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .voice-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .voice-btn:hover {
+            transform: translateY(-50%) scale(1.05);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .voice-btn.recording {
+            background: linear-gradient(135deg, #f56565, #c53030);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 1rem;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+            border-color: #667eea;
+            text-decoration: none;
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            color: #1a202c;
+            font-size: 1.3rem;
+            margin-bottom: 0.8rem;
+            font-weight: 700;
+        }
+
+        .feature-card p {
+            color: #718096;
+            line-height: 1.6;
+        }
+
+        .response-area {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            min-height: 150px;
+            border: 2px solid #e2e8f0;
+            display: none;
+        }
+
+        .response-area.active {
+            display: block;
+        }
+
+        .response-content {
+            color: #2d3748;
+            line-height: 1.8;
+        }
+
+        .task-list {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .task-item {
+            padding: 1rem;
+            border-left: 4px solid #667eea;
+            background: #f7fafc;
+            margin-bottom: 1rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .task-item:hover {
+            background: #edf2f7;
+            transform: translateX(5px);
+        }
+
+        .task-item h4 {
+            color: #1a202c;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-item p {
+            color: #718096;
+            font-size: 0.95rem;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .tab {
+            padding: 1rem 2rem;
+            background: none;
+            border: none;
+            color: #718096;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #667eea;
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .quick-action {
+            background: white;
+            border: 2px solid #e2e8f0;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+            color: #4a5568;
+        }
+
+        .quick-action:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: #f7fafc;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-content">
+            <div class="logo">🔧 Fix-It Fred</div>
+            <div class="nav-links">
+                <a href="#chat">Chat</a>
+                <a href="#tasks">Tasks</a>
+                <a href="#assets">My Assets</a>
+                <a href="/docs">API Docs</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="hero">
+            <h1>Fix-It Fred</h1>
+            <div class="subtitle">Your Intelligent AI Assistant</div>
+            <div class="description">
+                Get expert help with car maintenance, home repairs, equipment troubleshooting, and everyday tasks.
+                Fred combines AI intelligence with practical knowledge to help you get things done.
+            </div>
+        </div>
+
+        <div class="interactive-section">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('chat')">💬 Chat with Fred</button>
+                <button class="tab" onclick="switchTab('tasks')">📋 Task Planner</button>
+                <button class="tab" onclick="switchTab('voice')">🎤 Voice Notes</button>
+            </div>
+
+            <div id="chat-tab" class="tab-content active">
+                <h2 class="section-title">Chat with Fred</h2>
+
+                <div class="quick-actions">
+                    <div class="quick-action" onclick="askQuestion('How do I change my car oil?')">🚗 Change Oil</div>
+                    <div class="quick-action" onclick="askQuestion('Fix a leaky faucet')">🏠 Fix Faucet</div>
+                    <div class="quick-action" onclick="askQuestion('My lawn mower won\'t start')">🛠️ Mower Help</div>
+                    <div class="quick-action" onclick="askQuestion('Plan bathroom remodel')">📐 Remodel Plan</div>
+                </div>
+
+                <div class="input-group">
+                    <label for="chat-input">Ask Fred anything about repairs, maintenance, or projects</label>
+                    <div class="input-wrapper">
+                        <textarea id="chat-input" class="input-field" placeholder="Type your question here or click the microphone to speak..."></textarea>
+                        <button class="voice-btn" onclick="toggleVoice('chat')" title="Click to use voice input">
+                            🎤 Voice
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="sendChat()">Ask Fred</button>
+
+                <div id="chat-response" class="response-area">
+                    <div class="response-content"></div>
+                </div>
+            </div>
+
+            <div id="tasks-tab" class="tab-content">
+                <h2 class="section-title">Task Planner</h2>
+
+                <div class="input-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" class="input-field" placeholder="e.g., Change brake pads on my truck">
+                </div>
+
+                <div class="input-group">
+                    <label for="task-description">Description</label>
+                    <div class="input-wrapper">
+                        <textarea id="task-description" class="input-field" placeholder="Describe what needs to be done..."></textarea>
+                        <button class="voice-btn" onclick="toggleVoice('task')" title="Click to use voice input">
+                            🎤 Voice
+                        </button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="task-priority">Priority</label>
+                    <select id="task-priority" class="input-field">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+
+                <button class="btn-primary" onclick="createTask()">Create Task</button>
+                <button class="btn-secondary" onclick="loadTasks()">View My Tasks</button>
+
+                <div id="task-response" class="response-area">
+                    <div class="response-content"></div>
+                </div>
+            </div>
+
+            <div id="voice-tab" class="tab-content">
+                <h2 class="section-title">Voice Notes & Reminders</h2>
+
+                <div class="input-group">
+                    <label>Record a voice note or reminder</label>
+                    <div class="input-wrapper">
+                        <textarea id="voice-note" class="input-field" placeholder="Your voice note will appear here..."></textarea>
+                        <button class="voice-btn" onclick="toggleVoice('note')" title="Click to record">
+                            🎤 Record
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn-primary" onclick="saveNote()">Save Note</button>
+                <button class="btn-secondary" onclick="loadNotes()">View Notes</button>
+
+                <div id="note-response" class="response-area">
+                    <div class="response-content"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="interactive-section">
+            <h2 class="section-title">What Fred Can Help With</h2>
+            <p style="color: #718096; margin-bottom: 2rem; font-size: 1.1rem;">Click on any card below to access specialized AI assistants powered by OpenAI</p>
+            <div class="features-grid">
+                <a href="/dashboard/car-repair" class="feature-card">
+                    <div class="feature-icon">🚗</div>
+                    <h3>Car Maintenance</h3>
+                    <p>Oil changes, brake jobs, diagnostics, 100k mile service. Fred knows your vehicle inside and out.</p>
+                </a>
+                <a href="/dashboard/home-repair" class="feature-card">
+                    <div class="feature-icon">🏠</div>
+                    <h3>Home Repairs</h3>
+                    <p>Plumbing, electrical, drywall, painting. Get step-by-step guidance for any home project.</p>
+                </a>
+                <a href="/dashboard/manufacturing" class="feature-card">
+                    <div class="feature-icon">🛠️</div>
+                    <h3>Equipment Fixes</h3>
+                    <p>Lawn mowers, generators, power tools. Troubleshoot and repair your equipment.</p>
+                </a>
+                <a href="/dashboard/construction" class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Project Planning</h3>
+                    <p>Workshop builds, remodels. Get materials lists, cut lists, and project schedules.</p>
+                </a>
+                <a href="/dashboard/retail" class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Parts Sourcing</h3>
+                    <p>Find the right parts, compare prices, and get accurate cost estimates.</p>
+                </a>
+                <a href="/dashboard/logistics" class="feature-card">
+                    <div class="feature-icon">⏰</div>
+                    <h3>Maintenance Tracking</h3>
+                    <p>Never miss an oil change, filter replacement, or scheduled service.</p>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isRecording = false;
+        let recognition = null;
+        let currentVoiceTarget = null;
+
+        // Initialize speech recognition if available
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onresult = function(event) {
+                const transcript = event.results[0][0].transcript;
+                if (currentVoiceTarget === 'chat') {
+                    document.getElementById('chat-input').value = transcript;
+                } else if (currentVoiceTarget === 'task') {
+                    document.getElementById('task-description').value = transcript;
+                } else if (currentVoiceTarget === 'note') {
+                    document.getElementById('voice-note').value = transcript;
+                }
+            };
+
+            recognition.onend = function() {
+                isRecording = false;
+                document.querySelectorAll('.voice-btn').forEach(btn => {
+                    btn.classList.remove('recording');
+                    btn.innerHTML = '🎤 Voice';
+                });
+            };
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        function toggleVoice(target) {
+            if (!recognition) {
+                alert('Voice recognition is not supported in your browser. Please use Chrome or Edge.');
+                return;
+            }
+
+            currentVoiceTarget = target;
+            const btn = event.target;
+
+            if (isRecording) {
+                recognition.stop();
+                isRecording = false;
+                btn.classList.remove('recording');
+                btn.innerHTML = '🎤 Voice';
+            } else {
+                recognition.start();
+                isRecording = true;
+                btn.classList.add('recording');
+                btn.innerHTML = '⏹️ Stop';
+            }
+        }
+
+        function askQuestion(question) {
+            document.getElementById('chat-input').value = question;
+            sendChat();
+        }
+
+        async function sendChat() {
+            const input = document.getElementById('chat-input').value;
+            if (!input.trim()) return;
+
+            const responseArea = document.getElementById('chat-response');
+            const responseContent = responseArea.querySelector('.response-content');
+
+            responseArea.classList.add('active');
+            responseContent.innerHTML = '<div class="loading"></div> Fred is thinking...';
+
+            try {
+                const response = await fetch('/api/fred/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: 'web-user-' + Date.now(),
+                        message: input
+                    })
+                });
+
+                const data = await response.json();
+                responseContent.innerHTML = `<strong>Fred says:</strong><br><br>${data.response || data.message || JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                responseContent.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        async function createTask() {
+            const title = document.getElementById('task-title').value;
+            const description = document.getElementById('task-description').value;
+            const priority = document.getElementById('task-priority').value;
+
+            if (!title.trim()) {
+                alert('Please enter a task title');
+                return;
+            }
+
+            const responseArea = document.getElementById('task-response');
+            const responseContent = responseArea.querySelector('.response-content');
+
+            responseArea.classList.add('active');
+            responseContent.innerHTML = '<div class="loading"></div> Creating your task...';
+
+            try {
+                const response = await fetch('/api/fred/tasks/create', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: 'web-user-' + Date.now(),
+                        asset_id: 'general',
+                        title: title,
+                        description: description,
+                        priority: priority
+                    })
+                });
+
+                const data = await response.json();
+
+                let html = '<strong>✅ Task Created!</strong><br><br>';
+                html += `<strong>Title:</strong> ${data.title}<br>`;
+                html += `<strong>Priority:</strong> ${data.priority}<br>`;
+
+                if (data.steps && data.steps.length > 0) {
+                    html += '<br><strong>Steps:</strong><ol>';
+                    data.steps.forEach(step => html += `<li>${step}</li>`);
+                    html += '</ol>';
+                }
+
+                if (data.estimated_time) {
+                    html += `<br><strong>Estimated Time:</strong> ${data.estimated_time}`;
+                }
+
+                responseContent.innerHTML = html;
+
+                document.getElementById('task-title').value = '';
+                document.getElementById('task-description').value = '';
+            } catch (error) {
+                responseContent.innerHTML = `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+
+        function loadTasks() {
+            const responseArea = document.getElementById('task-response');
+            const responseContent = responseArea.querySelector('.response-content');
+            responseArea.classList.add('active');
+            responseContent.innerHTML = '<p>Task history feature coming soon! All your tasks will be saved and accessible here.</p>';
+        }
+
+        function saveNote() {
+            const note = document.getElementById('voice-note').value;
+            if (!note.trim()) {
+                alert('Please record or type a note first');
+                return;
+            }
+
+            const responseArea = document.getElementById('note-response');
+            const responseContent = responseArea.querySelector('.response-content');
+            responseArea.classList.add('active');
+            responseContent.innerHTML = `<strong>✅ Note Saved!</strong><br><br>${note}`;
+
+            document.getElementById('voice-note').value = '';
+        }
+
+        function loadNotes() {
+            const responseArea = document.getElementById('note-response');
+            const responseContent = responseArea.querySelector('.response-content');
+            responseArea.classList.add('active');
+            responseContent.innerHTML = '<p>Your saved notes will appear here. Note history feature coming soon!</p>';
+        }
+    </script>
+</body>
+</html>

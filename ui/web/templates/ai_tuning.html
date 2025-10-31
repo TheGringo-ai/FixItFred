@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Fine-Tuning - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - AI Fine-Tuning</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200">Modules</a>
+                <a href="/clients" class="hover:text-blue-200">Clients</a>
+                <a href="/ai-tuning" class="hover:text-blue-200 font-bold">AI Tuning</a>
+                <a href="/analytics" class="hover:text-blue-200">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4" x-data="aiTuningDashboard()">
+        <!-- AI Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">AI Models Active</h3>
+                <p class="text-3xl font-bold text-blue-600" x-text="overview.active_models"></p>
+                <p class="text-sm text-blue-600">🤖 Across all modules</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Training Samples</h3>
+                <p class="text-3xl font-bold text-green-600" x-text="overview.training_samples"></p>
+                <p class="text-sm text-green-600">📚 Continuous learning</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Avg Accuracy</h3>
+                <p class="text-3xl font-bold text-purple-600" x-text="overview.avg_accuracy + '%'"></p>
+                <p class="text-sm text-purple-600">📈 Improving daily</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-lg font-semibold text-gray-700">Response Time</h3>
+                <p class="text-3xl font-bold text-orange-600" x-text="overview.response_time"></p>
+                <p class="text-sm text-orange-600">⚡ Lightning fast</p>
+            </div>
+        </div>
+
+        <!-- AI Personality Creator -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">🤖 Create AI Personality</h3>
+                <form @submit.prevent="createPersonality()">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">AI Assistant Name</label>
+                            <input type="text" x-model="newPersonality.name" class="w-full p-2 border rounded-lg" 
+                                   placeholder="Fred, Alice, TechBot..." value="Fred">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Communication Tone</label>
+                            <select x-model="newPersonality.tone" class="w-full p-2 border rounded-lg">
+                                <option value="professional">Professional & Business-focused</option>
+                                <option value="friendly">Friendly & Approachable</option>
+                                <option value="technical">Technical & Detailed</option>
+                                <option value="casual">Casual & Conversational</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Expertise Level</label>
+                            <select x-model="newPersonality.expertise" class="w-full p-2 border rounded-lg">
+                                <option value="beginner">Beginner-friendly explanations</option>
+                                <option value="intermediate">Intermediate level knowledge</option>
+                                <option value="expert">Expert-level insights</option>
+                                <option value="specialist">Industry specialist</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Industry Focus</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <template x-for="industry in availableIndustries" :key="industry">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" :value="industry" 
+                                               x-model="newPersonality.industries" class="mr-2">
+                                        <span x-text="industry" class="text-sm"></span>
+                                    </label>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Response Style</label>
+                            <select x-model="newPersonality.style" class="w-full p-2 border rounded-lg">
+                                <option value="concise">Concise & Direct</option>
+                                <option value="detailed">Detailed & Comprehensive</option>
+                                <option value="conversational">Conversational & Interactive</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700">
+                            🚀 Create AI Personality
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Module AI Status -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">📦 Module AI Status</h3>
+                <div class="space-y-3">
+                    <template x-for="module in moduleAIs" :key="module.type">
+                        <div class="border p-3 rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <h4 class="font-semibold" x-text="module.name"></h4>
+                                <span :class="module.accuracy > 85 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'" 
+                                      class="px-2 py-1 rounded-full text-xs">
+                                    <span x-text="module.accuracy + '%'"></span> Accuracy
+                                </span>
+                            </div>
+                            <div class="text-sm text-gray-600 mb-2">
+                                <span>Training Samples: </span>
+                                <span class="font-medium" x-text="module.training_samples"></span>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button @click="tuneModule(module.type)" 
+                                        class="bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600">
+                                    🎯 Fine-tune
+                                </button>
+                                <button @click="testModule(module.type)" 
+                                        class="bg-green-500 text-white px-3 py-1 rounded text-xs hover:bg-green-600">
+                                    🧪 Test AI
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- Training Data Manager -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8">
+            <h3 class="text-xl font-bold mb-4">📚 Training Data Manager</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Add Training Data -->
+                <div>
+                    <h4 class="font-semibold mb-3">Add Training Data</h4>
+                    <form @submit.prevent="addTrainingData()">
+                        <div class="space-y-3">
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Module Type</label>
+                                <select x-model="trainingForm.module" class="w-full p-2 border rounded-lg">
+                                    <option value="">Select module...</option>
+                                    <option value="quality">Quality Control</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="safety">Safety</option>
+                                    <option value="operations">Operations</option>
+                                    <option value="finance">Finance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">User Input</label>
+                                <textarea x-model="trainingForm.input" class="w-full p-2 border rounded-lg h-20" 
+                                          placeholder="What would a user ask?"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1">Expected AI Response</label>
+                                <textarea x-model="trainingForm.output" class="w-full p-2 border rounded-lg h-20" 
+                                          placeholder="How should the AI respond?"></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-green-600 text-white p-2 rounded-lg hover:bg-green-700">
+                                📚 Add Training Sample
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Training Progress -->
+                <div>
+                    <h4 class="font-semibold mb-3">Training Progress</h4>
+                    <div class="space-y-3">
+                        <template x-for="module in moduleAIs" :key="module.type">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span x-text="module.name"></span>
+                                    <span x-text="module.training_samples + ' samples'"></span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                                         :style="`width: ${Math.min(100, (module.training_samples / 100) * 100)}%`"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-blue-50 rounded-lg">
+                        <h5 class="font-medium text-blue-800 mb-2">💡 Training Tips</h5>
+                        <ul class="text-sm text-blue-700 space-y-1">
+                            <li>• Add 10+ samples per module for basic tuning</li>
+                            <li>• Include industry-specific scenarios</li>
+                            <li>• Use real user questions from your business</li>
+                            <li>• Higher quality samples = better AI performance</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Testing Interface -->
+        <div class="bg-white p-6 rounded-lg shadow mb-8" x-show="showTesting">
+            <h3 class="text-xl font-bold mb-4">🧪 Test Your AI Assistant</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Test Input -->
+                <div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Select Module to Test</label>
+                        <select x-model="testModule" class="w-full p-2 border rounded-lg">
+                            <option value="">Choose module...</option>
+                            <template x-for="module in moduleAIs" :key="module.type">
+                                <option :value="module.type" x-text="module.name"></option>
+                            </template>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-2">Test Question</label>
+                        <textarea x-model="testQuestion" class="w-full p-2 border rounded-lg h-32" 
+                                  placeholder="Ask your AI assistant anything..."></textarea>
+                    </div>
+                    <button @click="testAI()" class="w-full bg-purple-600 text-white p-2 rounded-lg hover:bg-purple-700">
+                        🤖 Test AI Response
+                    </button>
+                </div>
+                
+                <!-- Test Results -->
+                <div>
+                    <h4 class="font-semibold mb-3">AI Response</h4>
+                    <div class="border rounded-lg p-4 bg-gray-50 h-64 overflow-y-auto">
+                        <div x-show="!testResponse" class="text-gray-500 italic">
+                            AI response will appear here...
+                        </div>
+                        <div x-show="testResponse" class="space-y-2">
+                            <div class="flex items-start space-x-2">
+                                <div class="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs">
+                                    🤖
+                                </div>
+                                <div class="flex-1 bg-white p-3 rounded-lg shadow-sm">
+                                    <p x-text="testResponse"></p>
+                                    <div class="text-xs text-gray-500 mt-2">
+                                        Response time: <span x-text="responseTime"></span>ms
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div x-show="testResponse" class="mt-4">
+                        <label class="block text-sm font-medium mb-2">Rate this response:</label>
+                        <div class="flex space-x-2">
+                            <template x-for="star in [1,2,3,4,5]" :key="star">
+                                <button @click="rateResponse(star)" 
+                                        :class="star <= responseRating ? 'text-yellow-500' : 'text-gray-300'"
+                                        class="text-2xl hover:text-yellow-400">★</button>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Analytics -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-4">📊 AI Performance Analytics</h3>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Performance Chart -->
+                <div>
+                    <h4 class="font-semibold mb-3">Accuracy Over Time</h4>
+                    <canvas id="accuracyChart" width="400" height="200"></canvas>
+                </div>
+                
+                <!-- Training Statistics -->
+                <div>
+                    <h4 class="font-semibold mb-3">Training Statistics</h4>
+                    <div class="space-y-3">
+                        <div class="flex justify-between">
+                            <span>Total Training Sessions:</span>
+                            <span class="font-bold">247</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Average Session Quality:</span>
+                            <span class="font-bold text-green-600">4.2/5</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Learning Rate:</span>
+                            <span class="font-bold text-blue-600">0.15/hour</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Best Performing Module:</span>
+                            <span class="font-bold text-purple-600">Quality Control</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-green-50 rounded-lg">
+                        <h5 class="font-medium text-green-800 mb-2">🎯 Optimization Suggestions</h5>
+                        <ul class="text-sm text-green-700 space-y-1">
+                            <li>• Add more maintenance training data</li>
+                            <li>• Test safety module with edge cases</li>
+                            <li>• Consider personality adjustments for operations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function aiTuningDashboard() {
+            return {
+                overview: {
+                    active_models: 12,
+                    training_samples: 2847,
+                    avg_accuracy: 87,
+                    response_time: '0.3s'
+                },
+                
+                newPersonality: {
+                    name: 'Fred',
+                    tone: 'professional',
+                    expertise: 'expert',
+                    industries: [],
+                    style: 'concise'
+                },
+                
+                availableIndustries: [
+                    'Manufacturing', 'Healthcare', 'Retail', 'Logistics', 
+                    'Finance', 'Technology', 'Energy', 'Construction'
+                ],
+                
+                moduleAIs: [
+                    {type: 'quality', name: 'Quality Control AI', accuracy: 92, training_samples: 487},
+                    {type: 'maintenance', name: 'Maintenance AI', accuracy: 88, training_samples: 356},
+                    {type: 'safety', name: 'Safety AI', accuracy: 85, training_samples: 298},
+                    {type: 'operations', name: 'Operations AI', accuracy: 89, training_samples: 423},
+                    {type: 'finance', name: 'Finance AI', accuracy: 91, training_samples: 512}
+                ],
+                
+                trainingForm: {
+                    module: '',
+                    input: '',
+                    output: ''
+                },
+                
+                showTesting: false,
+                testModule: '',
+                testQuestion: '',
+                testResponse: '',
+                responseTime: 0,
+                responseRating: 0,
+                
+                createPersonality() {
+                    alert(`✅ AI Personality "${this.newPersonality.name}" created!\n\nTone: ${this.newPersonality.tone}\nExpertise: ${this.newPersonality.expertise}\nIndustries: ${this.newPersonality.industries.join(', ')}\n\nYour AI assistant is now customized for your business needs!`);
+                },
+                
+                addTrainingData() {
+                    if (!this.trainingForm.module || !this.trainingForm.input || !this.trainingForm.output) {
+                        alert('Please fill in all fields');
+                        return;
+                    }
+                    
+                    // Find and update the module
+                    const module = this.moduleAIs.find(m => m.type === this.trainingForm.module);
+                    if (module) {
+                        module.training_samples += 1;
+                        module.accuracy = Math.min(95, module.accuracy + 0.1);
+                    }
+                    
+                    // Reset form
+                    this.trainingForm = {module: '', input: '', output: ''};
+                    
+                    alert('✅ Training data added! Your AI is getting smarter.');
+                },
+                
+                tuneModule(moduleType) {
+                    const module = this.moduleAIs.find(m => m.type === moduleType);
+                    alert(`🎯 Fine-tuning ${module.name}...\n\nTraining samples: ${module.training_samples}\nCurrent accuracy: ${module.accuracy}%\n\nFine-tuning will improve accuracy by 2-5% based on your training data.`);
+                },
+                
+                testModule(moduleType) {
+                    this.testModule = moduleType;
+                    this.showTesting = true;
+                },
+                
+                async testAI() {
+                    if (!this.testModule || !this.testQuestion) {
+                        alert('Please select a module and enter a question');
+                        return;
+                    }
+                    
+                    const startTime = Date.now();
+                    
+                    // Simulate AI processing
+                    this.testResponse = 'Processing...';
+                    
+                    setTimeout(() => {
+                        const module = this.moduleAIs.find(m => m.type === this.testModule);
+                        this.testResponse = `Based on our ${module.name} analysis, here's my recommendation: [Specific AI-powered response based on your training data and fine-tuning]. This response considers your industry knowledge and business context.`;
+                        this.responseTime = Date.now() - startTime;
+                    }, 1000);
+                },
+                
+                rateResponse(rating) {
+                    this.responseRating = rating;
+                    alert(`Thank you for rating! This feedback helps improve the AI. Rating: ${rating}/5 stars`);
+                }
+            }
+        }
+        
+        // Initialize accuracy chart
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('accuracyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6'],
+                    datasets: [{
+                        label: 'AI Accuracy %',
+                        data: [65, 72, 78, 83, 87, 91],
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: 60,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>

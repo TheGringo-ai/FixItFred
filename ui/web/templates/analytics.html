@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - Analytics</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200">Modules</a>
+                <a href="/clients" class="hover:text-blue-200">Clients</a>
+                <a href="/deploy" class="hover:text-blue-200">Deploy</a>
+                <a href="/analytics" class="hover:text-blue-200 font-bold">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4">
+        <!-- Key Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Total Deployments</h3>
+                <p class="text-3xl font-bold text-blue-600">{{ data.total_deployments }}</p>
+                <p class="text-sm text-green-600">↗ +12 this month</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Avg Deploy Time</h3>
+                <p class="text-3xl font-bold text-green-600">{{ data.avg_deployment_time }}</p>
+                <p class="text-sm text-green-600">↗ 0.2s faster</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Client Savings</h3>
+                <p class="text-3xl font-bold text-purple-600">{{ data.total_savings }}</p>
+                <p class="text-sm text-green-600">↗ vs traditional ERP</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow text-center">
+                <h3 class="text-lg font-semibold text-gray-700">Revenue This Month</h3>
+                <p class="text-3xl font-bold text-orange-600">{{ data.revenue_this_month }}</p>
+                <p class="text-sm text-green-600">↗ +24% vs last month</p>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Deployment Timeline -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">📈 Deployment Timeline</h3>
+                <canvas id="deploymentChart" width="400" height="200"></canvas>
+            </div>
+            
+            <!-- Industry Breakdown -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">🏭 Industry Breakdown</h3>
+                <canvas id="industryChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- System Performance -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">⚡ System Performance</h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center">
+                        <span>Platform Uptime</span>
+                        <span class="font-bold text-green-600">{{ data.uptime }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 99.97%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span>Voice Commands Processed</span>
+                        <span class="font-bold text-blue-600">{{ data.voice_commands_processed }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 85%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span>Client Satisfaction</span>
+                        <span class="font-bold text-purple-600">{{ data.client_satisfaction }}</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 98.5%"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Module Usage -->
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-bold mb-4">📦 Module Usage</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span>Quality Control</span>
+                        <span class="font-bold">87%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full" style="width: 87%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span>Maintenance Management</span>
+                        <span class="font-bold">73%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-green-600 h-2 rounded-full" style="width: 73%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span>Operations Management</span>
+                        <span class="font-bold">68%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-purple-600 h-2 rounded-full" style="width: 68%"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center">
+                        <span>Safety Compliance</span>
+                        <span class="font-bold">54%</span>
+                    </div>
+                    <div class="w-full bg-gray-200 rounded-full h-2">
+                        <div class="bg-yellow-600 h-2 rounded-full" style="width: 54%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="bg-white p-6 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-4">📋 Recent Activity</h3>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs mr-3">DEPLOY</span>
+                        <span>TechManufacturing Corp - Complete ERP deployment</span>
+                    </div>
+                    <span class="text-sm text-gray-500">2 minutes ago</span>
+                </div>
+                <div class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-3">MODULE</span>
+                        <span>Custom quality module created for automotive industry</span>
+                    </div>
+                    <span class="text-sm text-gray-500">8 minutes ago</span>
+                </div>
+                <div class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                        <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs mr-3">VOICE</span>
+                        <span>Voice command processed: "Hey Fred, show quality metrics"</span>
+                    </div>
+                    <span class="text-sm text-gray-500">12 minutes ago</span>
+                </div>
+                <div class="flex items-center justify-between border-b pb-2">
+                    <div class="flex items-center">
+                        <span class="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs mr-3">ALERT</span>
+                        <span>HealthTech Medical - Maintenance schedule optimization completed</span>
+                    </div>
+                    <span class="text-sm text-gray-500">25 minutes ago</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs mr-3">SUCCESS</span>
+                        <span>RetailMax Corp - $2.1M savings milestone achieved</span>
+                    </div>
+                    <span class="text-sm text-gray-500">1 hour ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Deployment Timeline Chart
+        const deploymentCtx = document.getElementById('deploymentChart').getContext('2d');
+        new Chart(deploymentCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'Deployments',
+                    data: [2, 4, 8, 12, 18, 25],
+                    borderColor: 'rgb(59, 130, 246)',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Industry Breakdown Chart
+        const industryCtx = document.getElementById('industryChart').getContext('2d');
+        new Chart(industryCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Manufacturing', 'Healthcare', 'Retail', 'Logistics', 'Other'],
+                datasets: [{
+                    data: [45, 25, 15, 10, 5],
+                    backgroundColor: [
+                        'rgb(59, 130, 246)',
+                        'rgb(16, 185, 129)', 
+                        'rgb(168, 85, 247)',
+                        'rgb(245, 158, 11)',
+                        'rgb(107, 114, 128)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

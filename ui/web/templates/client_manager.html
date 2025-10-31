@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Manager - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-100">
+    <nav class="bg-blue-600 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">🔧 FixItFred - Client Manager</h1>
+            <div class="space-x-4">
+                <a href="/" class="hover:text-blue-200">Home</a>
+                <a href="/modules" class="hover:text-blue-200">Modules</a>
+                <a href="/clients" class="hover:text-blue-200 font-bold">Clients</a>
+                <a href="/deploy" class="hover:text-blue-200">Deploy</a>
+                <a href="/analytics" class="hover:text-blue-200">Analytics</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto mt-8 px-4">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold">🏢 Client Management</h2>
+            <a href="/deploy" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+                + Deploy New Client
+            </a>
+        </div>
+
+        <!-- Client Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {% for client in clients %}
+            <div class="bg-white p-6 rounded-lg shadow border-l-4 border-blue-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold">{{ client.name }}</h3>
+                        <p class="text-gray-600">{{ client.industry }}</p>
+                    </div>
+                    <span class="px-3 py-1 {% if client.status == 'Active' %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %} rounded-full text-sm">
+                        {{ client.status }}
+                    </span>
+                </div>
+                
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Employees:</span>
+                        <span class="font-semibold">{{ client.employees }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Deployed:</span>
+                        <span class="font-semibold">{{ client.deployment_date }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Savings:</span>
+                        <span class="font-semibold text-green-600">{{ client.savings }}</span>
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Active Modules:</p>
+                    <div class="flex flex-wrap gap-2">
+                        {% for module in client.modules %}
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">{{ module }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="flex space-x-2">
+                    <button class="flex-1 bg-blue-500 text-white py-2 px-3 rounded hover:bg-blue-600">
+                        View Dashboard
+                    </button>
+                    <button class="flex-1 bg-gray-500 text-white py-2 px-3 rounded hover:bg-gray-600">
+                        Manage Modules
+                    </button>
+                    <button class="bg-green-500 text-white py-2 px-3 rounded hover:bg-green-600">
+                        🎤 Voice Demo
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Client Analytics Summary -->
+        <div class="mt-8 bg-white p-6 rounded-lg shadow">
+            <h3 class="text-xl font-bold mb-4">📊 Client Portfolio Summary</h3>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-blue-600">{{ clients|length }}</p>
+                    <p class="text-gray-600">Total Clients</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-green-600">{{ clients|selectattr("status", "equalto", "Active")|list|length }}</p>
+                    <p class="text-gray-600">Active Deployments</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-purple-600">$4.2M</p>
+                    <p class="text-gray-600">Total Savings Generated</p>
+                </div>
+                <div class="text-center">
+                    <p class="text-2xl font-bold text-orange-600">99.8%</p>
+                    <p class="text-gray-600">System Uptime</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

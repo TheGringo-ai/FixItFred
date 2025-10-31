@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Manager - FixItFred Empire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+<body class="bg-gray-900 text-white">
+    <div x-data="companyManager()">
+        <!-- Header -->
+        <header class="bg-black border-b border-purple-500">
+            <div class="container mx-auto px-4 py-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center space-x-4">
+                        <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-pink-600 text-transparent bg-clip-text">
+                            🏢 Company Manager
+                        </h1>
+                        <span class="text-green-400 text-sm">● <span x-text="companies.length"></span> Companies</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <a href="/master" class="px-4 py-2 bg-purple-600 rounded hover:bg-purple-700">
+                            ← Master Control
+                        </a>
+                        <div class="text-right">
+                            <div class="text-xs text-gray-400">Total Value</div>
+                            <div class="text-xl font-bold text-green-400">$<span x-text="formatNumber(totalValue)"></span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Search and Filters -->
+        <div class="container mx-auto px-4 py-6">
+            <div class="bg-gray-800 rounded-lg p-6 mb-6 border border-gray-700">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <!-- Search -->
+                    <div>
+                        <input type="text" x-model="searchTerm" @input="filterCompanies()"
+                               class="w-full p-3 bg-gray-700 rounded text-white" 
+                               placeholder="Search companies...">
+                    </div>
+                    
+                    <!-- Industry Filter -->
+                    <div>
+                        <select x-model="industryFilter" @change="filterCompanies()"
+                                class="w-full p-3 bg-gray-700 rounded text-white">
+                            <option value="">All Industries</option>
+                            <option value="manufacturing">Manufacturing</option>
+                            <option value="healthcare">Healthcare</option>
+                            <option value="logistics">Logistics</option>
+                            <option value="construction">Construction</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Size Filter -->
+                    <div>
+                        <select x-model="sizeFilter" @change="filterCompanies()"
+                                class="w-full p-3 bg-gray-700 rounded text-white">
+                            <option value="">All Sizes</option>
+                            <option value="small">Small (1-50)</option>
+                            <option value="medium">Medium (51-200)</option>
+                            <option value="large">Large (201-1000)</option>
+                            <option value="enterprise">Enterprise (1000+)</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div>
+                        <select x-model="sortBy" @change="sortCompanies()"
+                                class="w-full p-3 bg-gray-700 rounded text-white">
+                            <option value="name">Sort by Name</option>
+                            <option value="revenue">Sort by Revenue</option>
+                            <option value="workers">Sort by Workers</option>
+                            <option value="date">Sort by Date</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <template x-for="company in filteredCompanies" :key="company.id">
+                    <div class="bg-gray-800 rounded-lg border border-gray-700 hover:border-purple-500 transition cursor-pointer"
+                         @click="viewCompany(company)">
+                        <!-- Company Header -->
+                        <div class="p-4 border-b border-gray-700">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold" x-text="company.name"></h3>
+                                <span class="text-xs px-2 py-1 rounded" 
+                                      :class="company.status === 'active' ? 'bg-green-600' : 'bg-red-600'"
+                                      x-text="company.status"></span>
+                            </div>
+                            <div class="text-sm text-gray-400">
+                                <span x-text="company.industry"></span> • 
+                                <span x-text="company.size"></span>
+                            </div>
+                            <div class="text-xs text-purple-400 mt-1" x-text="company.domain"></div>
+                        </div>
+                        
+                        <!-- Company Stats -->
+                        <div class="p-4">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
+                                <div>
+                                    <div class="text-xs text-gray-400">Workers</div>
+                                    <div class="text-2xl font-bold text-blue-400" x-text="company.workers"></div>
+                                </div>
+                                <div>
+                                    <div class="text-xs text-gray-400">Revenue</div>
+                                    <div class="text-2xl font-bold text-green-400">$<span x-text="formatNumber(company.revenue)"></span></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Modules -->
+                            <div class="mb-4">
+                                <div class="text-xs text-gray-400 mb-2">Modules</div>
+                                <div class="flex flex-wrap gap-1">
+                                    <template x-for="module in company.modules" :key="module">
+                                        <span class="text-xs bg-purple-600 px-2 py-1 rounded" x-text="module"></span>
+                                    </template>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="flex space-x-2">
+                                <button @click.stop="viewDashboard(company)" 
+                                        class="flex-1 bg-blue-600 text-xs py-2 rounded hover:bg-blue-700">
+                                    📊 View Dashboard
+                                </button>
+                                <button @click.stop="manageCompany(company)" 
+                                        class="flex-1 bg-purple-600 text-xs py-2 rounded hover:bg-purple-700">
+                                    ⚙️ Manage
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Last Activity -->
+                        <div class="px-4 pb-4">
+                            <div class="text-xs text-gray-500">
+                                Last activity: <span x-text="company.lastActivity"></span>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Pagination -->
+            <div class="flex justify-center mt-8" x-show="totalPages > 1">
+                <div class="flex space-x-2">
+                    <button @click="currentPage = Math.max(1, currentPage - 1)" 
+                            :disabled="currentPage === 1"
+                            class="px-4 py-2 bg-gray-700 rounded disabled:opacity-50">
+                        Previous
+                    </button>
+                    
+                    <template x-for="page in Array.from({length: totalPages}, (_, i) => i + 1)" :key="page">
+                        <button @click="currentPage = page" 
+                                :class="currentPage === page ? 'bg-purple-600' : 'bg-gray-700'"
+                                class="px-4 py-2 rounded" x-text="page">
+                        </button>
+                    </template>
+                    
+                    <button @click="currentPage = Math.min(totalPages, currentPage + 1)" 
+                            :disabled="currentPage === totalPages"
+                            class="px-4 py-2 bg-gray-700 rounded disabled:opacity-50">
+                        Next
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Detail Modal -->
+        <div x-show="selectedCompany" @click.away="selectedCompany = null" 
+             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="bg-gray-800 rounded-lg p-6 max-w-4xl w-full mx-4 max-h-screen overflow-y-auto" @click.stop>
+                <template x-if="selectedCompany">
+                    <div>
+                        <!-- Modal Header -->
+                        <div class="flex justify-between items-start mb-6">
+                            <div>
+                                <h2 class="text-2xl font-bold" x-text="selectedCompany.name"></h2>
+                                <p class="text-gray-400" x-text="selectedCompany.domain"></p>
+                            </div>
+                            <button @click="selectedCompany = null" 
+                                    class="text-gray-400 hover:text-white text-2xl">&times;</button>
+                        </div>
+                        
+                        <!-- Company Overview -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="bg-gray-700 p-4 rounded">
+                                <h4 class="font-semibold mb-2">Company Info</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div>Industry: <span class="text-purple-400" x-text="selectedCompany.industry"></span></div>
+                                    <div>Size: <span class="text-blue-400" x-text="selectedCompany.size"></span></div>
+                                    <div>Workers: <span class="text-green-400" x-text="selectedCompany.workers"></span></div>
+                                    <div>Status: <span class="text-yellow-400" x-text="selectedCompany.status"></span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-700 p-4 rounded">
+                                <h4 class="font-semibold mb-2">Financial</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div>Setup Revenue: <span class="text-green-400">$<span x-text="formatNumber(selectedCompany.revenue)"></span></span></div>
+                                    <div>Monthly MRR: <span class="text-green-400">$<span x-text="formatNumber(selectedCompany.revenue / 12)"></span></span></div>
+                                    <div>Annual Value: <span class="text-green-400">$<span x-text="formatNumber(selectedCompany.revenue)"></span></span></div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gray-700 p-4 rounded">
+                                <h4 class="font-semibold mb-2">Technical</h4>
+                                <div class="space-y-2 text-sm">
+                                    <div>API Key: <span class="text-purple-400 text-xs font-mono" x-text="selectedCompany.apiKey"></span></div>
+                                    <div>Deployed: <span class="text-blue-400" x-text="selectedCompany.deployedDate"></span></div>
+                                    <div>Version: <span class="text-yellow-400">v1.0.0</span></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Modules -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3">Active Modules</h4>
+                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <template x-for="module in selectedCompany.modules" :key="module">
+                                    <div class="bg-purple-600 p-3 rounded text-center">
+                                        <div class="font-semibold" x-text="module"></div>
+                                        <div class="text-xs text-purple-200">Active</div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="flex flex-wrap gap-3">
+                            <button @click="viewDashboard(selectedCompany)" 
+                                    class="px-6 py-3 bg-blue-600 rounded hover:bg-blue-700">
+                                📊 View Company Dashboard
+                            </button>
+                            <button @click="viewWorkers(selectedCompany)" 
+                                    class="px-6 py-3 bg-green-600 rounded hover:bg-green-700">
+                                👷 View Workers
+                            </button>
+                            <button @click="viewAnalytics(selectedCompany)" 
+                                    class="px-6 py-3 bg-purple-600 rounded hover:bg-purple-700">
+                                📈 Analytics
+                            </button>
+                            <button @click="manageSettings(selectedCompany)" 
+                                    class="px-6 py-3 bg-orange-600 rounded hover:bg-orange-700">
+                                ⚙️ Settings
+                            </button>
+                            <button @click="suspendCompany(selectedCompany)" 
+                                    class="px-6 py-3 bg-red-600 rounded hover:bg-red-700">
+                                ⏸️ Suspend
+                            </button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function companyManager() {
+            return {
+                companies: [
+                    {
+                        id: 1,
+                        name: 'Boeing Manufacturing',
+                        domain: 'boeing-manufacturing.fixitfred.ai',
+                        industry: 'manufacturing',
+                        size: 'enterprise',
+                        workers: 500,
+                        revenue: 61000,
+                        modules: ['quality', 'maintenance', 'safety'],
+                        status: 'active',
+                        deployedDate: '2024-01-15',
+                        lastActivity: '2 hours ago',
+                        apiKey: 'fif_boeing_abc123xyz789'
+                    },
+                    {
+                        id: 2,
+                        name: 'Tesla Gigafactory',
+                        domain: 'tesla-gigafactory.fixitfred.ai',
+                        industry: 'manufacturing',
+                        size: 'enterprise',
+                        workers: 1000,
+                        revenue: 111000,
+                        modules: ['quality', 'operations', 'analytics'],
+                        status: 'active',
+                        deployedDate: '2024-01-16',
+                        lastActivity: '30 minutes ago',
+                        apiKey: 'fif_tesla_def456uvw012'
+                    },
+                    {
+                        id: 3,
+                        name: 'Johnson Controls',
+                        domain: 'johnson-controls.fixitfred.ai',
+                        industry: 'manufacturing',
+                        size: 'large',
+                        workers: 250,
+                        revenue: 34000,
+                        modules: ['maintenance', 'safety'],
+                        status: 'active',
+                        deployedDate: '2024-01-17',
+                        lastActivity: '1 hour ago',
+                        apiKey: 'fif_johnson_ghi789rst345'
+                    },
+                    {
+                        id: 4,
+                        name: '3M Production',
+                        domain: '3m-production.fixitfred.ai',
+                        industry: 'manufacturing',
+                        size: 'medium',
+                        workers: 150,
+                        revenue: 24000,
+                        modules: ['quality', 'compliance'],
+                        status: 'active',
+                        deployedDate: '2024-01-18',
+                        lastActivity: '45 minutes ago',
+                        apiKey: 'fif_3m_jkl012mno678'
+                    },
+                    {
+                        id: 5,
+                        name: 'Ford Assembly Plant',
+                        domain: 'ford-assembly-plant.fixitfred.ai',
+                        industry: 'manufacturing',
+                        size: 'enterprise',
+                        workers: 750,
+                        revenue: 86000,
+                        modules: ['quality', 'maintenance', 'operations'],
+                        status: 'active',
+                        deployedDate: '2024-01-19',
+                        lastActivity: '15 minutes ago',
+                        apiKey: 'fif_ford_pqr345stu901'
+                    }
+                ],
+                
+                filteredCompanies: [],
+                selectedCompany: null,
+                
+                // Filters
+                searchTerm: '',
+                industryFilter: '',
+                sizeFilter: '',
+                sortBy: 'name',
+                
+                // Pagination
+                currentPage: 1,
+                itemsPerPage: 9,
+                totalPages: 1,
+                
+                get totalValue() {
+                    return this.companies.reduce((sum, company) => sum + company.revenue, 0);
+                },
+                
+                init() {
+                    this.filteredCompanies = [...this.companies];
+                    this.updatePagination();
+                },
+                
+                filterCompanies() {
+                    let filtered = [...this.companies];
+                    
+                    // Search filter
+                    if (this.searchTerm) {
+                        filtered = filtered.filter(company => 
+                            company.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+                            company.domain.toLowerCase().includes(this.searchTerm.toLowerCase())
+                        );
+                    }
+                    
+                    // Industry filter
+                    if (this.industryFilter) {
+                        filtered = filtered.filter(company => company.industry === this.industryFilter);
+                    }
+                    
+                    // Size filter
+                    if (this.sizeFilter) {
+                        filtered = filtered.filter(company => company.size === this.sizeFilter);
+                    }
+                    
+                    this.filteredCompanies = filtered;
+                    this.sortCompanies();
+                    this.updatePagination();
+                },
+                
+                sortCompanies() {
+                    this.filteredCompanies.sort((a, b) => {
+                        switch (this.sortBy) {
+                            case 'revenue':
+                                return b.revenue - a.revenue;
+                            case 'workers':
+                                return b.workers - a.workers;
+                            case 'date':
+                                return new Date(b.deployedDate) - new Date(a.deployedDate);
+                            default:
+                                return a.name.localeCompare(b.name);
+                        }
+                    });
+                },
+                
+                updatePagination() {
+                    this.totalPages = Math.ceil(this.filteredCompanies.length / this.itemsPerPage);
+                    this.currentPage = 1;
+                },
+                
+                viewCompany(company) {
+                    this.selectedCompany = company;
+                },
+                
+                viewDashboard(company) {
+                    // Open company's FixItFred dashboard
+                    window.open(`https://${company.domain}`, '_blank');
+                },
+                
+                viewWorkers(company) {
+                    alert(`Viewing ${company.workers} workers for ${company.name}\n\nThis would show:\n• Individual worker performance\n• AI agent interactions\n• Task completion rates\n• Training progress`);
+                },
+                
+                viewAnalytics(company) {
+                    alert(`Analytics for ${company.name}:\n\n• Productivity metrics\n• Module usage stats\n• ROI analysis\n• Performance trends`);
+                },
+                
+                manageSettings(company) {
+                    alert(`Settings for ${company.name}:\n\n• Module configuration\n• User permissions\n• Integration settings\n• Billing preferences`);
+                },
+                
+                suspendCompany(company) {
+                    if (confirm(`Are you sure you want to suspend ${company.name}?\n\nThis will temporarily disable access to their FixItFred system.`)) {
+                        company.status = 'suspended';
+                        alert(`${company.name} has been suspended.`);
+                    }
+                },
+                
+                manageCompany(company) {
+                    this.viewCompany(company);
+                },
+                
+                formatNumber(num) {
+                    return new Intl.NumberFormat('en-US').format(num);
+                }
+            }
+        }
+    </script>
+</body>
+</html>

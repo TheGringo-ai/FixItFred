@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixItFred AI Assistant - Platform Builder</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .chat-container {
+            height: calc(100vh - 8rem);
+        }
+        .message-bubble {
+            animation: fadeIn 0.3s ease-in;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .typing-indicator {
+            animation: pulse 1s infinite;
+        }
+        .code-block {
+            background: #1e1e1e;
+            border-radius: 8px;
+            padding: 1rem;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+        }
+        .module-card {
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .module-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Universal Navigation -->
+    <nav class="bg-gradient-to-r from-indigo-900 via-purple-900 to-pink-900 border-b border-purple-500 sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex items-center justify-between h-14">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <!-- Fred Character Logo -->
+                        <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                            <svg viewBox="0 0 48 48" class="w-8 h-8" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Fred's Face Background -->
+                                <circle cx="24" cy="20" r="16" fill="#FFB366" stroke="#E6A85C" stroke-width="1"/>
+                                
+                                <!-- Red Frizzy Hair -->
+                                <path d="M12 12 Q8 8 10 6 Q12 4 16 6 Q20 2 24 4 Q28 2 32 6 Q36 4 38 6 Q40 8 36 12" 
+                                      fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                
+                                <!-- Eyes -->
+                                <circle cx="18" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="30" cy="16" r="2" fill="#1F2937"/>
+                                <circle cx="18.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                <circle cx="30.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                
+                                <!-- Warm Smile -->
+                                <path d="M16 22 Q24 28 32 22" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                
+                                <!-- Red Beard -->
+                                <path d="M14 24 Q12 28 14 32 Q16 36 20 34 Q24 38 28 34 Q32 36 34 32 Q36 28 34 24" 
+                                      fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                
+                                <!-- Overalls (Blue with straps) -->
+                                <rect x="16" y="32" width="16" height="12" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1" rx="2"/>
+                                
+                                <!-- Boots -->
+                                <rect x="14" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                <rect x="28" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="text-lg font-bold text-white">FixItFred</span>
+                            <div class="text-xs text-purple-200">AI Assistant</div>
+                        </div>
+                    </div>
+                    <div class="px-2 py-1 bg-pink-600 rounded-full">
+                        <span class="text-xs text-pink-100 font-semibold">AI CHAT</span>
+                    </div>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/professional" class="px-3 py-2 hover:bg-purple-700 rounded-lg text-white text-sm transition">🏢 Professional</a>
+                    <a href="http://localhost:9000" target="_blank" class="px-3 py-2 hover:bg-purple-700 rounded-lg text-white text-sm transition">🚀 Master Control</a>
+                    <a href="/" class="px-3 py-2 hover:bg-purple-700 rounded-lg text-white text-sm transition">⚙️ Technical</a>
+                    <a href="/projects" class="px-3 py-2 hover:bg-purple-700 rounded-lg text-white text-sm transition">📊 Projects</a>
+                    <a href="/chat" class="px-3 py-2 bg-purple-700 rounded-lg text-white text-sm">🤖 AI Chat</a>
+                </div>
+
+                <div class="flex items-center space-x-2">
+                    <div class="text-xs text-right">
+                        <div class="text-pink-400 font-bold">Online</div>
+                        <div class="text-purple-200">Fred AI</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-robot text-blue-600 text-2xl mr-3"></i>
+                        <h1 class="text-xl font-bold text-gray-900">FixItFred AI Assistant</h1>
+                    </div>
+                    <span class="text-sm text-gray-500">Platform Builder & Module Customizer</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                        <span class="text-sm text-gray-600">AI Online</span>
+                    </div>
+                    <button id="voiceToggle" class="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors">
+                        <i class="fas fa-microphone text-gray-600"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            
+            <!-- Chat Interface -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow-sm border">
+                    <!-- Chat Header -->
+                    <div class="border-b px-6 py-4">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900">Chat with Fred</h2>
+                            <div class="flex space-x-2">
+                                <button id="clearChat" class="text-sm text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-trash-alt mr-1"></i> Clear
+                                </button>
+                                <button id="exportChat" class="text-sm text-gray-500 hover:text-gray-700">
+                                    <i class="fas fa-download mr-1"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1">Ask me to build modules, customize platforms, or integrate systems</p>
+                    </div>
+
+                    <!-- Chat Messages -->
+                    <div id="chatMessages" class="chat-container overflow-y-auto px-6 py-4 space-y-4">
+                        <!-- Welcome Message -->
+                        <div class="message-bubble">
+                            <div class="flex items-start space-x-3">
+                                <div class="flex-shrink-0">
+                                    <!-- Fred Character Avatar -->
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-cyan-100 rounded-full flex items-center justify-center shadow-lg border-2 border-white overflow-hidden">
+                                        <svg viewBox="0 0 48 48" class="w-10 h-10" xmlns="http://www.w3.org/2000/svg">
+                                            <!-- Fred's Face Background -->
+                                            <circle cx="24" cy="20" r="16" fill="#FFB366" stroke="#E6A85C" stroke-width="1"/>
+                                            
+                                            <!-- Red Frizzy Hair -->
+                                            <path d="M12 12 Q8 8 10 6 Q12 4 16 6 Q20 2 24 4 Q28 2 32 6 Q36 4 38 6 Q40 8 36 12" 
+                                                  fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                            
+                                            <!-- Eyes -->
+                                            <circle cx="18" cy="16" r="2" fill="#1F2937"/>
+                                            <circle cx="30" cy="16" r="2" fill="#1F2937"/>
+                                            <circle cx="18.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                            <circle cx="30.5" cy="15.5" r="0.5" fill="#FFFFFF"/>
+                                            
+                                            <!-- Warm Smile -->
+                                            <path d="M16 22 Q24 28 32 22" stroke="#1F2937" stroke-width="2" fill="none" stroke-linecap="round"/>
+                                            
+                                            <!-- Red Beard -->
+                                            <path d="M14 24 Q12 28 14 32 Q16 36 20 34 Q24 38 28 34 Q32 36 34 32 Q36 28 34 24" 
+                                                  fill="#DC2626" stroke="#B91C1C" stroke-width="1"/>
+                                            
+                                            <!-- Overalls (Blue with straps) -->
+                                            <rect x="16" y="32" width="16" height="12" fill="#1E40AF" stroke="#1E3A8A" stroke-width="1" rx="2"/>
+                                            
+                                            <!-- Boots -->
+                                            <rect x="14" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                            <rect x="28" y="42" width="6" height="4" fill="#1F2937" stroke="#111827" stroke-width="1" rx="1"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                        <h3 class="font-semibold text-blue-900 mb-2">👋 Hey there! I'm Fred, your friendly AI platform builder!</h3>
+                                        <p class="text-blue-800 mb-3">With my toolbox and big heart, I can help you:</p>
+                                        <ul class="text-blue-800 space-y-1 mb-3">
+                                            <li><i class="fas fa-wrench text-orange-500 mr-2"></i> Create business modules from templates</li>
+                                            <li><i class="fas fa-cogs text-blue-500 mr-2"></i> Customize forms, fields, and workflows</li>
+                                            <li><i class="fas fa-plug text-green-500 mr-2"></i> Integrate with SAP, Salesforce, and other systems</li>
+                                            <li><i class="fas fa-microphone text-purple-500 mr-2"></i> Set up voice commands and AI assistants</li>
+                                            <li><i class="fas fa-cloud text-cyan-500 mr-2"></i> Deploy platforms to the cloud</li>
+                                        </ul>
+                                        <p class="text-blue-800"><strong>Try saying:</strong> "Create a quality management module for manufacturing" or "Show me the LineSmart training platform"</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <div class="border-t px-6 py-4">
+                        <div class="flex space-x-4">
+                            <div class="flex-1">
+                                <div class="relative">
+                                    <input 
+                                        type="text" 
+                                        id="chatInput" 
+                                        placeholder="Ask Fred to build or customize anything..." 
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        autocomplete="off"
+                                    >
+                                    <button id="voiceInputBtn" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-microphone"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button 
+                                id="sendMessage" 
+                                class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                            >
+                                <i class="fas fa-paper-plane mr-2"></i> Send
+                            </button>
+                        </div>
+                        <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
+                            <span>Press Enter to send • <i class="fas fa-microphone"></i> for voice input</span>
+                            <span id="aiModelStatus">Using: Llama-3.2 (Local)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="lg:col-span-1 space-y-6">
+                
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <div class="space-y-3">
+                        <button class="quick-action w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors" 
+                                data-action="create-module">
+                            <i class="fas fa-plus-circle text-green-500 mr-3"></i>
+                            <span class="font-medium">Create Module</span>
+                        </button>
+                        <button class="quick-action w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                                data-action="view-platforms">
+                            <i class="fas fa-th-large text-blue-500 mr-3"></i>
+                            <span class="font-medium">View Platforms</span>
+                        </button>
+                        <button class="quick-action w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                                data-action="customize-linesmart">
+                            <i class="fas fa-graduation-cap text-purple-500 mr-3"></i>
+                            <span class="font-medium">LineSmart Training</span>
+                        </button>
+                        <button class="quick-action w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                                data-action="sap-integration">
+                            <i class="fas fa-link text-orange-500 mr-3"></i>
+                            <span class="font-medium">SAP Integration</span>
+                        </button>
+                        <button class="quick-action w-full text-left p-3 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+                                data-action="voice-setup">
+                            <i class="fas fa-microphone text-red-500 mr-3"></i>
+                            <span class="font-medium">Voice Commands</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Active Modules -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Active Modules</h3>
+                    <div id="activeModules" class="space-y-3">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    <button id="refreshModules" class="w-full mt-4 text-sm text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-sync-alt mr-1"></i> Refresh
+                    </button>
+                </div>
+
+                <!-- AI Models -->
+                <div class="bg-white rounded-lg shadow-sm border p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">AI Models</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Llama-3.2</span>
+                            <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">Default</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">OpenAI GPT-4</span>
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" id="openaiStatus">Not configured</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm font-medium">Claude-3</span>
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full" id="claudeStatus">Not configured</span>
+                        </div>
+                    </div>
+                    <button id="configureModels" class="w-full mt-4 text-sm text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-cog mr-1"></i> Configure API Keys
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Model Configuration Modal -->
+    <div id="modelConfigModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="px-6 py-4 border-b">
+                <h3 class="text-lg font-semibold">Configure AI Models</h3>
+            </div>
+            <div class="px-6 py-4 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+                    <input type="password" id="openaiKey" placeholder="sk-..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Claude API Key</label>
+                    <input type="password" id="claudeKey" placeholder="sk-..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Google Gemini API Key</label>
+                    <input type="password" id="geminiKey" placeholder="AI..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                </div>
+                <div class="text-xs text-gray-500">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    API keys are stored securely and only used for your requests. Llama runs locally by default.
+                </div>
+            </div>
+            <div class="px-6 py-4 border-t flex space-x-3">
+                <button id="saveModelConfig" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">Save</button>
+                <button id="cancelModelConfig" class="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chat functionality
+        class ChatAssistant {
+            constructor() {
+                this.messages = [];
+                this.isTyping = false;
+                this.initializeEventListeners();
+                this.loadActiveModules();
+                this.checkAIModelStatus();
+            }
+
+            initializeEventListeners() {
+                // Send message
+                document.getElementById('sendMessage').addEventListener('click', () => this.sendMessage());
+                document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        this.sendMessage();
+                    }
+                });
+
+                // Quick actions
+                document.querySelectorAll('.quick-action').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const action = e.currentTarget.dataset.action;
+                        this.handleQuickAction(action);
+                    });
+                });
+
+                // AI model configuration
+                document.getElementById('configureModels').addEventListener('click', () => {
+                    document.getElementById('modelConfigModal').classList.remove('hidden');
+                    document.getElementById('modelConfigModal').classList.add('flex');
+                });
+
+                document.getElementById('cancelModelConfig').addEventListener('click', () => {
+                    document.getElementById('modelConfigModal').classList.add('hidden');
+                    document.getElementById('modelConfigModal').classList.remove('flex');
+                });
+
+                document.getElementById('saveModelConfig').addEventListener('click', () => {
+                    this.saveModelConfiguration();
+                });
+
+                // Other buttons
+                document.getElementById('clearChat').addEventListener('click', () => this.clearChat());
+                document.getElementById('refreshModules').addEventListener('click', () => this.loadActiveModules());
+            }
+
+            async sendMessage() {
+                const input = document.getElementById('chatInput');
+                const message = input.value.trim();
+                
+                if (!message || this.isTyping) return;
+
+                // Add user message
+                this.addMessage(message, 'user');
+                input.value = '';
+
+                // Show typing indicator
+                this.showTyping();
+
+                try {
+                    // Send to AI assistant
+                    const response = await fetch('/api/assistant/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: message,
+                            context: 'platform_builder',
+                            conversation_history: this.messages.slice(-10)
+                        })
+                    });
+
+                    const result = await response.json();
+                    
+                    this.hideTyping();
+                    
+                    if (result.response) {
+                        this.addMessage(result.response, 'assistant', result.actions);
+                    } else {
+                        this.addMessage("I'm having trouble understanding that. Could you try rephrasing?", 'assistant');
+                    }
+
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage("I'm experiencing technical difficulties. Please try again.", 'assistant');
+                }
+            }
+
+            addMessage(content, sender, actions = null) {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message-bubble';
+
+                const isUser = sender === 'user';
+                const avatarColor = isUser ? 'bg-gray-600' : 'bg-blue-600';
+                const avatarIcon = isUser ? 'fa-user' : 'fa-robot';
+                const bubbleColor = isUser ? 'bg-gray-100 border-gray-200' : 'bg-blue-50 border-blue-200';
+                const textColor = isUser ? 'text-gray-800' : 'text-blue-800';
+
+                let actionsHtml = '';
+                if (actions && actions.length > 0) {
+                    actionsHtml = `
+                        <div class="mt-3 pt-3 border-t border-blue-200">
+                            <div class="flex flex-wrap gap-2">
+                                ${actions.map(action => `
+                                    <button class="action-btn text-xs px-3 py-1 bg-blue-600 text-white rounded-full hover:bg-blue-700" 
+                                            data-action="${action.type}" data-params='${JSON.stringify(action.params || {})}'>
+                                        <i class="${action.icon || 'fas fa-play'} mr-1"></i> ${action.label}
+                                    </button>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 ${avatarColor} rounded-full flex items-center justify-center">
+                                <i class="fas ${avatarIcon} text-white text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="${bubbleColor} rounded-lg p-4 border">
+                                <div class="${textColor}">${this.formatMessage(content)}</div>
+                                ${actionsHtml}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                messagesContainer.appendChild(messageDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+                // Add event listeners to action buttons
+                messageDiv.querySelectorAll('.action-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const actionType = e.target.dataset.action;
+                        const params = JSON.parse(e.target.dataset.params || '{}');
+                        this.executeAction(actionType, params);
+                    });
+                });
+
+                // Store message
+                this.messages.push({ content, sender, timestamp: new Date() });
+            }
+
+            formatMessage(content) {
+                // Handle code blocks
+                content = content.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+                    return `<div class="code-block mt-2 mb-2"><pre><code>${this.escapeHtml(code.trim())}</code></pre></div>`;
+                });
+
+                // Handle inline code
+                content = content.replace(/`([^`]+)`/g, '<code class="bg-gray-200 px-1 py-0.5 rounded text-sm">$1</code>');
+
+                // Handle bold text
+                content = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                // Handle line breaks
+                content = content.replace(/\n/g, '<br>');
+
+                return content;
+            }
+
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            showTyping() {
+                this.isTyping = true;
+                const messagesContainer = document.getElementById('chatMessages');
+                const typingDiv = document.createElement('div');
+                typingDiv.id = 'typingIndicator';
+                typingDiv.className = 'message-bubble typing-indicator';
+                typingDiv.innerHTML = `
+                    <div class="flex items-start space-x-3">
+                        <div class="flex-shrink-0">
+                            <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                <i class="fas fa-robot text-white text-sm"></i>
+                            </div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                                <div class="flex space-x-1">
+                                    <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                                    <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.1s"></div>
+                                    <div class="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                messagesContainer.appendChild(typingDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            hideTyping() {
+                this.isTyping = false;
+                const typingIndicator = document.getElementById('typingIndicator');
+                if (typingIndicator) {
+                    typingIndicator.remove();
+                }
+            }
+
+            handleQuickAction(action) {
+                const actions = {
+                    'create-module': "I'd like to create a new business module. What templates are available?",
+                    'view-platforms': "Show me all the active platforms and modules I have running.",
+                    'customize-linesmart': "I want to customize my LineSmart training platform. What options do I have?",
+                    'sap-integration': "Help me set up SAP integration with write-back capabilities.",
+                    'voice-setup': "How do I configure voice commands for my modules?"
+                };
+
+                if (actions[action]) {
+                    document.getElementById('chatInput').value = actions[action];
+                    this.sendMessage();
+                }
+            }
+
+            async executeAction(actionType, params) {
+                // Handle various action types
+                switch (actionType) {
+                    case 'create_module':
+                        this.createModule(params);
+                        break;
+                    case 'open_dashboard':
+                        window.open(params.url, '_blank');
+                        break;
+                    case 'download_config':
+                        this.downloadConfig(params);
+                        break;
+                    case 'run_test':
+                        this.runTest(params);
+                        break;
+                    default:
+                        console.log('Unknown action:', actionType, params);
+                }
+            }
+
+            async createModule(params) {
+                try {
+                    const response = await fetch('/api/studio/modules', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(params)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        this.addMessage(`✅ Module "${result.module_id}" created successfully! It's now available in your dashboard.`, 'assistant');
+                        this.loadActiveModules();
+                    } else {
+                        this.addMessage(`❌ Failed to create module: ${result.error || 'Unknown error'}`, 'assistant');
+                    }
+                } catch (error) {
+                    this.addMessage(`❌ Error creating module: ${error.message}`, 'assistant');
+                }
+            }
+
+            async loadActiveModules() {
+                try {
+                    const response = await fetch('/api/studio/modules');
+                    const modules = await response.json();
+
+                    const container = document.getElementById('activeModules');
+                    container.innerHTML = '';
+
+                    if (modules && modules.length > 0) {
+                        modules.forEach(module => {
+                            const moduleDiv = document.createElement('div');
+                            moduleDiv.className = 'module-card p-3 bg-gray-50 rounded-lg border cursor-pointer hover:bg-gray-100';
+                            moduleDiv.innerHTML = `
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-medium text-sm">${module.name || module.module_id}</h4>
+                                        <p class="text-xs text-gray-500">${module.category || 'Custom'}</p>
+                                    </div>
+                                    <div class="flex items-center space-x-1">
+                                        <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                                        <span class="text-xs text-gray-500">Active</span>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            moduleDiv.addEventListener('click', () => {
+                                this.openModuleDashboard(module);
+                            });
+                            
+                            container.appendChild(moduleDiv);
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-sm text-gray-500">No active modules</p>';
+                    }
+                } catch (error) {
+                    console.error('Failed to load modules:', error);
+                }
+            }
+
+            openModuleDashboard(module) {
+                const category = module.category || module.module_id.split('_')[1];
+                window.open(`/dashboard/${category}`, '_blank');
+            }
+
+            async checkAIModelStatus() {
+                try {
+                    const response = await fetch('/api/ai/config');
+                    const config = await response.json();
+
+                    // Update status indicators
+                    if (config.providers?.openai?.configured) {
+                        document.getElementById('openaiStatus').textContent = 'Active';
+                        document.getElementById('openaiStatus').className = 'text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full';
+                    }
+
+                    if (config.providers?.claude?.configured) {
+                        document.getElementById('claudeStatus').textContent = 'Active';
+                        document.getElementById('claudeStatus').className = 'text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full';
+                    }
+                } catch (error) {
+                    console.error('Failed to check AI model status:', error);
+                }
+            }
+
+            async saveModelConfiguration() {
+                const openaiKey = document.getElementById('openaiKey').value;
+                const claudeKey = document.getElementById('claudeKey').value;
+                const geminiKey = document.getElementById('geminiKey').value;
+
+                try {
+                    const response = await fetch('/api/ai/config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            openai_key: openaiKey,
+                            claude_key: claudeKey,
+                            gemini_key: geminiKey
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Hide modal
+                        document.getElementById('modelConfigModal').classList.add('hidden');
+                        document.getElementById('modelConfigModal').classList.remove('flex');
+                        
+                        // Clear inputs
+                        document.getElementById('openaiKey').value = '';
+                        document.getElementById('claudeKey').value = '';
+                        document.getElementById('geminiKey').value = '';
+                        
+                        // Refresh status
+                        this.checkAIModelStatus();
+                        
+                        this.addMessage('✅ AI model configuration saved successfully!', 'assistant');
+                    } else {
+                        this.addMessage('❌ Failed to save model configuration.', 'assistant');
+                    }
+                } catch (error) {
+                    this.addMessage(`❌ Error saving configuration: ${error.message}`, 'assistant');
+                }
+            }
+
+            clearChat() {
+                document.getElementById('chatMessages').innerHTML = '';
+                this.messages = [];
+                
+                // Re-add welcome message
+                this.addMessage(`👋 Chat cleared! I'm ready to help you build and customize your platforms.`, 'assistant');
+            }
+        }
+
+        // Initialize chat assistant when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatAssistant();
+        });
+    </script>
+</body>
+</html>

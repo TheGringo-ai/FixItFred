@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker stop:*)",
+      "Bash(docker rm:*)",
+      "Bash(./deploy.sh:*)",
+      "Bash(curl:*)",
+      "Bash(python3:*)",
+      "Bash(docker-compose down:*)",
+      "Bash(docker exec:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
