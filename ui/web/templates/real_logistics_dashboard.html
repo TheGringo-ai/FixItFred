@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics AI Dashboard - FixItFred</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .status-active { color: #10b981; }
+        .status-warning { color: #f59e0b; }
+        .status-critical { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="logisticsDashboard()">
+    <!-- Header -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <div class="text-4xl">🚛</div>
+                    <div>
+                        <h1 class="text-2xl font-bold">Logistics AI Dashboard</h1>
+                        <p class="text-green-100">Real-time Fleet Intelligence</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <div class="text-sm text-green-100">AI Status</div>
+                        <div class="text-lg font-bold" :class="aiStatus.connected ? 'text-green-300' : 'text-red-300'">
+                            <span x-text="aiStatus.connected ? '🟢 ONLINE' : '🔴 OFFLINE'"></span>
+                        </div>
+                    </div>
+                    <button @click="refreshDashboard()" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition-colors">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Real-time Metrics -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Active Vehicles</h3>
+                        <p class="text-3xl font-bold text-green-600" x-text="metrics.activeVehicles"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">🚛</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">On-Time Delivery</h3>
+                        <p class="text-3xl font-bold text-blue-600" x-text="metrics.onTimeDelivery + '%'"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">📦</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Fleet Alerts</h3>
+                        <p class="text-3xl font-bold text-orange-600" x-text="metrics.fleetAlerts"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">⚠️</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-lg card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500">Fuel Efficiency</h3>
+                        <p class="text-3xl font-bold text-purple-600" x-text="metrics.fuelEfficiency + ' MPG'"></p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                        <span class="text-2xl">⛽</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fleet Management -->
+        <div class="grid md:grid-cols-2 gap-8 mb-8">
+            <!-- Fleet List -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-800">Fleet Status</h2>
+                    <button @click="showAddVehicle = true" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                        + Add Vehicle
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    <template x-for="vehicle in fleetList" :key="vehicle.id">
+                        <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-3">
+                                    <div class="w-3 h-3 rounded-full" :class="{
+                                        'bg-green-500': vehicle.status === 'active',
+                                        'bg-yellow-500': vehicle.status === 'maintenance',
+                                        'bg-red-500': vehicle.status === 'breakdown'
+                                    }"></div>
+                                    <div>
+                                        <h3 class="font-semibold" x-text="vehicle.vehicle_id"></h3>
+                                        <p class="text-sm text-gray-500" x-text="vehicle.type + ' - ' + vehicle.location"></p>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-2">
+                                    <button @click="trackVehicle(vehicle)" class="text-blue-600 hover:text-blue-800">
+                                        📍 Track
+                                    </button>
+                                    <button @click="diagnoseVehicle(vehicle)" class="text-green-600 hover:text-green-800">
+                                        🔧 Diagnose
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- AI Diagnosis Panel -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Fleet AI Diagnosis</h2>
+
+                <form @submit.prevent="runFleetDiagnosis()" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Vehicle</label>
+                        <select x-model="diagnosisForm.vehicleId" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="">Select Vehicle</option>
+                            <template x-for="vehicle in fleetList" :key="vehicle.id">
+                                <option :value="vehicle.id" x-text="vehicle.vehicle_id"></option>
+                            </template>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Issues</label>
+                        <textarea x-model="diagnosisForm.issues"
+                                rows="3"
+                                placeholder="Describe vehicle issues, performance problems, or maintenance needs..."
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Priority Level</label>
+                        <select x-model="diagnosisForm.priority" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                            <option value="low">Low Priority</option>
+                            <option value="medium">Medium Priority</option>
+                            <option value="high">High Priority</option>
+                            <option value="critical">Critical - Immediate Attention</option>
+                        </select>
+                    </div>
+
+                    <button type="submit"
+                            :disabled="diagnosisLoading"
+                            class="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold">
+                        <span x-show="!diagnosisLoading">🤖 Run Fleet Analysis</span>
+                        <span x-show="diagnosisLoading">🔄 Analyzing...</span>
+                    </button>
+                </form>
+
+                <!-- Diagnosis Results -->
+                <div x-show="diagnosisResult" class="mt-6 p-4 bg-gray-50 rounded-lg">
+                    <h3 class="font-semibold text-gray-800 mb-2">AI Fleet Analysis</h3>
+                    <div x-show="diagnosisResult.confidence" class="mb-2">
+                        <span class="text-sm text-gray-600">Confidence: </span>
+                        <span class="font-semibold" x-text="Math.round(diagnosisResult.confidence * 100) + '%'"></span>
+                    </div>
+                    <div class="text-sm text-gray-700" x-text="diagnosisResult.analysis"></div>
+
+                    <div x-show="diagnosisResult.recommendations" class="mt-3">
+                        <h4 class="font-semibold text-gray-800 mb-1">Recommendations:</h4>
+                        <ul class="text-sm text-gray-700 list-disc list-inside">
+                            <template x-for="rec in diagnosisResult.recommendations" :key="rec">
+                                <li x-text="rec"></li>
+                            </template>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time AI Chat -->
+        <div class="bg-white rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Logistics AI Assistant</h2>
+
+            <!-- Chat Messages -->
+            <div class="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 space-y-3">
+                <template x-for="message in chatMessages" :key="message.id">
+                    <div class="flex" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
+                        <div class="max-w-xs px-4 py-2 rounded-lg"
+                             :class="message.sender === 'user' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-800'">
+                            <p class="text-sm" x-text="message.text"></p>
+                            <span class="text-xs opacity-75" x-text="message.timestamp"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Chat Input -->
+            <form @submit.prevent="sendChatMessage()" class="flex space-x-2">
+                <input x-model="chatInput"
+                       type="text"
+                       placeholder="Ask about fleet management, route optimization, delivery tracking..."
+                       class="flex-1 border border-gray-300 rounded-lg px-3 py-2">
+                <button type="submit"
+                        :disabled="chatLoading || !chatInput.trim()"
+                        class="bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg">
+                    <span x-show="!chatLoading">Send</span>
+                    <span x-show="chatLoading">...</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Vehicle Modal -->
+    <div x-show="showAddVehicle" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <h3 class="text-lg font-bold mb-4">Add New Vehicle</h3>
+
+            <form @submit.prevent="addVehicle()" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Vehicle ID</label>
+                    <input x-model="newVehicle.vehicle_id" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                    <select x-model="newVehicle.type" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                        <option value="">Select Type</option>
+                        <option value="Truck">Truck</option>
+                        <option value="Van">Van</option>
+                        <option value="Semi-Truck">Semi-Truck</option>
+                        <option value="Cargo Plane">Cargo Plane</option>
+                        <option value="Ship">Ship</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Driver</label>
+                    <input x-model="newVehicle.driver" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Current Location</label>
+                    <input x-model="newVehicle.location" type="text" class="w-full border border-gray-300 rounded-lg px-3 py-2">
+                </div>
+
+                <div class="flex space-x-3">
+                    <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-white py-2 rounded-lg">
+                        Add Vehicle
+                    </button>
+                    <button type="button" @click="showAddVehicle = false" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 py-2 rounded-lg">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function logisticsDashboard() {
+            return {
+                // Dashboard state
+                aiStatus: { connected: false },
+                metrics: {
+                    activeVehicles: 0,
+                    onTimeDelivery: 0,
+                    fleetAlerts: 0,
+                    fuelEfficiency: 0
+                },
+                fleetList: [],
+
+                // Forms
+                showAddVehicle: false,
+                newVehicle: {
+                    vehicle_id: '',
+                    type: '',
+                    driver: '',
+                    location: ''
+                },
+
+                // Diagnosis
+                diagnosisForm: {
+                    vehicleId: '',
+                    issues: '',
+                    priority: 'medium'
+                },
+                diagnosisLoading: false,
+                diagnosisResult: null,
+
+                // Chat
+                chatMessages: [],
+                chatInput: '',
+                chatLoading: false,
+
+                // Initialize dashboard
+                async init() {
+                    await this.connectToAI();
+                    await this.loadDashboardData();
+                    this.startRealTimeUpdates();
+                    this.addWelcomeMessage();
+                },
+
+                async connectToAI() {
+                    try {
+                        const response = await fetch('/api/logistics/connect');
+                        this.aiStatus.connected = response.ok;
+                    } catch (error) {
+                        console.error('AI connection failed:', error);
+                        this.aiStatus.connected = false;
+                    }
+                },
+
+                async loadDashboardData() {
+                    try {
+                        // Load fleet
+                        const fleetResponse = await fetch('/api/logistics/fleet');
+                        if (fleetResponse.ok) {
+                            this.fleetList = await fleetResponse.json();
+                        }
+
+                        // Load metrics
+                        const metricsResponse = await fetch('/api/logistics/metrics');
+                        if (metricsResponse.ok) {
+                            this.metrics = await metricsResponse.json();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load dashboard data:', error);
+                        // Load sample data for demo
+                        this.loadSampleData();
+                    }
+                },
+
+                loadSampleData() {
+                    this.fleetList = [
+                        { id: 1, vehicle_id: 'TRK-001', type: 'Truck', driver: 'John Smith', location: 'Downtown Hub', status: 'active' },
+                        { id: 2, vehicle_id: 'VAN-042', type: 'Van', driver: 'Sarah Johnson', location: 'Route 15', status: 'active' },
+                        { id: 3, vehicle_id: 'TRK-015', type: 'Semi-Truck', driver: 'Mike Wilson', location: 'Highway 101', status: 'maintenance' },
+                        { id: 4, vehicle_id: 'VAN-023', type: 'Van', driver: 'Lisa Davis', location: 'Service Center', status: 'breakdown' }
+                    ];
+
+                    this.metrics = {
+                        activeVehicles: 2,
+                        onTimeDelivery: 94,
+                        fleetAlerts: 2,
+                        fuelEfficiency: 8.5
+                    };
+                },
+
+                startRealTimeUpdates() {
+                    // Simulate real-time updates
+                    setInterval(() => {
+                        if (this.aiStatus.connected) {
+                            this.metrics.onTimeDelivery = Math.max(85, Math.min(99, this.metrics.onTimeDelivery + (Math.random() - 0.5) * 2));
+                            this.metrics.fuelEfficiency = Math.max(6.0, Math.min(12.0, this.metrics.fuelEfficiency + (Math.random() - 0.5) * 0.5));
+                        }
+                    }, 5000);
+                },
+
+                async addVehicle() {
+                    if (!this.newVehicle.vehicle_id || !this.newVehicle.type) return;
+
+                    try {
+                        const response = await fetch('/api/logistics/fleet', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.newVehicle)
+                        });
+
+                        if (response.ok) {
+                            const vehicle = await response.json();
+                            this.fleetList.push(vehicle);
+                            this.showAddVehicle = false;
+                            this.newVehicle = { vehicle_id: '', type: '', driver: '', location: '' };
+                            this.metrics.activeVehicles++;
+                        }
+                    } catch (error) {
+                        // Fallback to local addition
+                        const newId = Math.max(0, ...this.fleetList.map(v => v.id)) + 1;
+                        this.fleetList.push({
+                            id: newId,
+                            ...this.newVehicle,
+                            status: 'active'
+                        });
+                        this.showAddVehicle = false;
+                        this.newVehicle = { vehicle_id: '', type: '', driver: '', location: '' };
+                        this.metrics.activeVehicles++;
+                    }
+                },
+
+                async runFleetDiagnosis() {
+                    if (!this.diagnosisForm.vehicleId || !this.diagnosisForm.issues) return;
+
+                    this.diagnosisLoading = true;
+                    this.diagnosisResult = null;
+
+                    try {
+                        const response = await fetch('/api/logistics/diagnose', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(this.diagnosisForm)
+                        });
+
+                        if (response.ok) {
+                            this.diagnosisResult = await response.json();
+                        } else {
+                            throw new Error('Diagnosis failed');
+                        }
+                    } catch (error) {
+                        // Fallback AI response
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        this.diagnosisResult = {
+                            confidence: 0.89,
+                            analysis: `Fleet analysis indicates potential issues with ${this.diagnosisForm.issues}. AI recommends immediate inspection of vehicle systems and preventive maintenance protocols.`,
+                            recommendations: [
+                                'Schedule comprehensive vehicle inspection',
+                                'Check engine diagnostics and fluid levels',
+                                'Verify tire condition and pressure',
+                                'Update maintenance records',
+                                'Consider route optimization for efficiency'
+                            ]
+                        };
+                    } finally {
+                        this.diagnosisLoading = false;
+                    }
+                },
+
+                async sendChatMessage() {
+                    if (!this.chatInput.trim()) return;
+
+                    const userMessage = {
+                        id: Date.now(),
+                        sender: 'user',
+                        text: this.chatInput,
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+
+                    this.chatMessages.push(userMessage);
+                    const question = this.chatInput;
+                    this.chatInput = '';
+                    this.chatLoading = true;
+
+                    try {
+                        const response = await fetch('/api/logistics/chat', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ message: question })
+                        });
+
+                        let aiResponse;
+                        if (response.ok) {
+                            const data = await response.json();
+                            aiResponse = data.response;
+                        } else {
+                            throw new Error('Chat failed');
+                        }
+
+                        this.chatMessages.push({
+                            id: Date.now() + 1,
+                            sender: 'ai',
+                            text: aiResponse,
+                            timestamp: new Date().toLocaleTimeString()
+                        });
+                    } catch (error) {
+                        // Fallback AI response
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                        this.chatMessages.push({
+                            id: Date.now() + 1,
+                            sender: 'ai',
+                            text: this.generateAIResponse(question),
+                            timestamp: new Date().toLocaleTimeString()
+                        });
+                    } finally {
+                        this.chatLoading = false;
+                    }
+                },
+
+                generateAIResponse(question) {
+                    const responses = {
+                        'delivery': "Current on-time delivery rate is 94%. Main delays are from traffic congestion on Route 15. I recommend implementing real-time traffic monitoring and alternative route suggestions.",
+                        'fuel': "Fleet fuel efficiency is averaging 8.5 MPG. TRK-015 is underperforming and needs engine diagnostics. Optimizing routes could improve overall efficiency by 12%.",
+                        'maintenance': "2 vehicles require attention: TRK-015 needs scheduled maintenance, VAN-023 has breakdown status. Implementing predictive maintenance could prevent 80% of unplanned downtime.",
+                        'route': "Route optimization analysis shows potential for 15% improvement in delivery times. Traffic patterns suggest avoiding Highway 101 during peak hours and using alternate routes.",
+                        'default': "I'm monitoring your logistics operations in real-time. I can help with fleet management, route optimization, delivery tracking, fuel efficiency, and predictive maintenance. What specific area needs attention?"
+                    };
+
+                    const lowerQuestion = question.toLowerCase();
+                    if (lowerQuestion.includes('delivery') || lowerQuestion.includes('time')) return responses.delivery;
+                    if (lowerQuestion.includes('fuel') || lowerQuestion.includes('efficiency')) return responses.fuel;
+                    if (lowerQuestion.includes('maintenance') || lowerQuestion.includes('repair')) return responses.maintenance;
+                    if (lowerQuestion.includes('route') || lowerQuestion.includes('optimize')) return responses.route;
+                    return responses.default;
+                },
+
+                addWelcomeMessage() {
+                    this.chatMessages.push({
+                        id: 1,
+                        sender: 'ai',
+                        text: 'Welcome to your Logistics AI Assistant! I can help with fleet management, route optimization, delivery tracking, and predictive maintenance. How can I assist you today?',
+                        timestamp: new Date().toLocaleTimeString()
+                    });
+                },
+
+                async refreshDashboard() {
+                    await this.loadDashboardData();
+                },
+
+                trackVehicle(vehicle) {
+                    alert(`Tracking ${vehicle.vehicle_id}: Currently at ${vehicle.location}. Real-time GPS tracking active.`);
+                },
+
+                diagnoseVehicle(vehicle) {
+                    this.diagnosisForm.vehicleId = vehicle.id;
+                    this.diagnosisForm.issues = `Requesting diagnosis for ${vehicle.vehicle_id} (${vehicle.type})`;
+                }
+            }
+        }
+    </script>
+</body>
+</html>

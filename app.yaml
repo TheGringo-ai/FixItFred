@@ -1,0 +1,41 @@
+runtime: python312
+
+env_variables:
+  # AI API Keys - Set these in GCP Secret Manager or Environment Variables
+  OPENAI_API_KEY: "your-openai-api-key"
+  ANTHROPIC_API_KEY: "your-anthropic-api-key"
+  XAI_API_KEY: "your-grok-api-key"
+  GEMINI_API_KEY: "your-gemini-api-key"
+
+  # Platform Configuration
+  ENVIRONMENT: "production"
+  LOG_LEVEL: "info"
+
+automatic_scaling:
+  min_instances: 1
+  max_instances: 10
+  target_cpu_utilization: 0.6
+
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+handlers:
+- url: /.*
+  script: auto
+
+# Health checks
+readiness_check:
+  path: "/health"
+  check_interval_sec: 5
+  timeout_sec: 4
+  failure_threshold: 2
+  success_threshold: 2
+
+liveness_check:
+  path: "/health"
+  check_interval_sec: 30
+  timeout_sec: 4
+  failure_threshold: 4
+  success_threshold: 2
