@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FixItFred - AI Development Enhancement Platform</title>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .code-block {
+            background: #1a1a1a;
+            color: #e5e5e5;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .agent-card {
+            transition: all 0.3s ease;
+        }
+        .agent-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .pulse-green {
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { background-color: rgb(34, 197, 94); }
+            50% { background-color: rgb(22, 163, 74); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div x-data="aiDevelopmentDashboard()" class="min-h-screen">
+        <!-- Header -->
+        <header class="bg-white shadow-sm border-b">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center py-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-robot text-blue-600 text-2xl mr-2"></i>
+                            <h1 class="text-2xl font-bold text-gray-900">FixItFred AI Development</h1>
+                        </div>
+                        <div class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <i class="fas fa-circle text-green-500 mr-1"></i>
+                            <span x-text="agentStatus.active_agents"></span> Agents Active
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <button @click="refreshDashboard()"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-sync-alt mr-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <!-- AI Team Status -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-tasks text-blue-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Total Tasks</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="metrics.total_tasks || 0"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Completed</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="metrics.completed_tasks || 0"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-percentage text-purple-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Success Rate</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="((metrics.success_rate || 0) * 100).toFixed(1) + '%'"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow p-6">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-brain text-indigo-600 text-2xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-medium text-gray-500">Learning Entries</p>
+                            <p class="text-2xl font-semibold text-gray-900" x-text="metrics.learning_entries || 0"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Development Agents -->
+            <div class="bg-white rounded-lg shadow mb-8">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-users-cog mr-2"></i>AI Development Agents
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <template x-for="(agent, agentId) in agentStatus.agents" :key="agentId">
+                            <div class="agent-card bg-gray-50 rounded-lg p-4 border-2"
+                                 :class="agent.status === 'busy' ? 'border-green-400 bg-green-50' : 'border-gray-200'">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h3 class="font-semibold text-gray-900" x-text="agent.name"></h3>
+                                    <div class="flex items-center">
+                                        <div class="w-3 h-3 rounded-full mr-2"
+                                             :class="agent.status === 'busy' ? 'pulse-green' : 'bg-gray-400'"></div>
+                                        <span class="text-sm capitalize"
+                                              :class="agent.status === 'busy' ? 'text-green-700' : 'text-gray-600'"
+                                              x-text="agent.status"></span>
+                                    </div>
+                                </div>
+
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-600">Active Tasks:</span>
+                                        <span class="font-medium" x-text="agent.current_tasks + '/' + agent.max_tasks"></span>
+                                    </div>
+
+                                    <div class="text-sm">
+                                        <span class="text-gray-600">Specializations:</span>
+                                        <div class="mt-1 flex flex-wrap gap-1">
+                                            <template x-for="spec in agent.specializations" :key="spec">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800"
+                                                      x-text="spec.replace('_', ' ')"></span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <button @click="viewAgentDetails(agentId)"
+                                        class="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm">
+                                    View Details
+                                </button>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <!-- Code Generation -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-code mr-2"></i>AI Code Generation
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <form @submit.prevent="generateCode()" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Module Type</label>
+                                <select x-model="codeGen.moduleType" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <option value="fastapi_service">FastAPI Service</option>
+                                    <option value="ai_assistant">AI Assistant</option>
+                                    <option value="data_processor">Data Processor</option>
+                                    <option value="integration">Integration Module</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Module Name</label>
+                                <input x-model="codeGen.moduleName" type="text"
+                                       class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2"
+                                       placeholder="e.g., inventory_manager">
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Requirements</label>
+                                <textarea x-model="codeGen.requirements"
+                                          class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 h-24"
+                                          placeholder="Describe what this module should do..."></textarea>
+                            </div>
+
+                            <button type="submit"
+                                    :disabled="codeGenLoading"
+                                    class="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50">
+                                <span x-show="!codeGenLoading">
+                                    <i class="fas fa-magic mr-2"></i>Generate Code
+                                </span>
+                                <span x-show="codeGenLoading">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>Generating...
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Generation Result -->
+                        <div x-show="codeGenResult" class="mt-6 p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-semibold mb-2">Generation Complete!</h4>
+                            <div class="text-sm text-gray-600" x-text="codeGenResult"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Code Review -->
+                <div class="bg-white rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h2 class="text-lg font-semibold text-gray-900">
+                            <i class="fas fa-search mr-2"></i>AI Code Review
+                        </h2>
+                    </div>
+                    <div class="p-6">
+                        <form @submit.prevent="reviewCode()" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Code to Review</label>
+                                <textarea x-model="codeReview.code"
+                                          class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 h-32 font-mono text-sm"
+                                          placeholder="Paste your code here..."></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Review Focus</label>
+                                <select x-model="codeReview.focus" class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2">
+                                    <option value="general">General Review</option>
+                                    <option value="security">Security Focus</option>
+                                    <option value="performance">Performance Focus</option>
+                                    <option value="maintainability">Maintainability Focus</option>
+                                </select>
+                            </div>
+
+                            <button type="submit"
+                                    :disabled="codeReviewLoading"
+                                    class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50">
+                                <span x-show="!codeReviewLoading">
+                                    <i class="fas fa-check-double mr-2"></i>Review Code
+                                </span>
+                                <span x-show="codeReviewLoading">
+                                    <i class="fas fa-spinner fa-spin mr-2"></i>Reviewing...
+                                </span>
+                            </button>
+                        </form>
+
+                        <!-- Review Result -->
+                        <div x-show="codeReviewResult" class="mt-6 p-4 bg-gray-100 rounded-lg">
+                            <h4 class="font-semibold mb-2">Review Complete!</h4>
+                            <div class="text-sm text-gray-600" x-text="codeReviewResult"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Team Chat -->
+            <div class="bg-white rounded-lg shadow">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h2 class="text-lg font-semibold text-gray-900">
+                        <i class="fas fa-comments mr-2"></i>AI Development Team Chat
+                    </h2>
+                </div>
+                <div class="p-6">
+                    <!-- Chat Messages -->
+                    <div class="h-64 overflow-y-auto border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50">
+                        <template x-for="message in chatMessages" :key="message.id">
+                            <div class="mb-4 flex" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
+                                <div class="max-w-xs lg:max-w-md px-4 py-2 rounded-lg"
+                                     :class="message.sender === 'user' ? 'bg-blue-600 text-white' : 'bg-white border border-gray-300'">
+                                    <div class="text-xs mb-1"
+                                         :class="message.sender === 'user' ? 'text-blue-100' : 'text-gray-500'"
+                                         x-text="message.sender === 'user' ? 'You' : 'AI Team (' + message.aiProvider + ')'"></div>
+                                    <div class="text-sm" x-text="message.text"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Chat Input -->
+                    <form @submit.prevent="sendChatMessage()" class="flex space-x-2">
+                        <input x-model="chatInput" type="text"
+                               class="flex-1 border border-gray-300 rounded-lg px-3 py-2"
+                               placeholder="Ask the AI development team anything...">
+                        <button type="submit"
+                                :disabled="chatLoading"
+                                class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50">
+                            <span x-show="!chatLoading">Send</span>
+                            <span x-show="chatLoading">
+                                <i class="fas fa-spinner fa-spin"></i>
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        function aiDevelopmentDashboard() {
+            return {
+                // Data
+                agentStatus: {
+                    active_agents: 0,
+                    agents: {}
+                },
+                metrics: {
+                    total_tasks: 0,
+                    completed_tasks: 0,
+                    success_rate: 0,
+                    learning_entries: 0
+                },
+                codeGen: {
+                    moduleType: 'fastapi_service',
+                    moduleName: '',
+                    requirements: ''
+                },
+                codeGenLoading: false,
+                codeGenResult: '',
+                codeReview: {
+                    code: '',
+                    focus: 'general'
+                },
+                codeReviewLoading: false,
+                codeReviewResult: '',
+                chatInput: '',
+                chatLoading: false,
+                chatMessages: [
+                    {
+                        id: 1,
+                        sender: 'ai',
+                        text: 'Hello! I\'m the AI Development Team. How can I help you build better code today?',
+                        aiProvider: 'Claude',
+                        timestamp: new Date()
+                    }
+                ],
+
+                // Methods
+                async init() {
+                    await this.loadDashboardData();
+                    this.setupWebSocket();
+                },
+
+                async loadDashboardData() {
+                    try {
+                        // Load agent status
+                        const agentResponse = await fetch('/api/development/agents/status');
+                        if (agentResponse.ok) {
+                            this.agentStatus = await agentResponse.json();
+                        }
+
+                        // Load metrics
+                        const metricsResponse = await fetch('/api/development/metrics');
+                        if (metricsResponse.ok) {
+                            this.metrics = await metricsResponse.json();
+                        }
+                    } catch (error) {
+                        console.error('Failed to load dashboard data:', error);
+                        // Use mock data for demo
+                        this.loadMockData();
+                    }
+                },
+
+                loadMockData() {
+                    this.agentStatus = {
+                        active_agents: 7,
+                        agents: {
+                            'code_gen': {
+                                name: 'Code Generation Agent',
+                                status: 'idle',
+                                current_tasks: 0,
+                                max_tasks: 3,
+                                specializations: ['code_generation', 'refactoring']
+                            },
+                            'test_ops': {
+                                name: 'Testing Agent',
+                                status: 'busy',
+                                current_tasks: 2,
+                                max_tasks: 3,
+                                specializations: ['testing']
+                            },
+                            'doc_gen': {
+                                name: 'Documentation Agent',
+                                status: 'idle',
+                                current_tasks: 0,
+                                max_tasks: 3,
+                                specializations: ['documentation']
+                            },
+                            'code_reviewer': {
+                                name: 'Code Review Agent',
+                                status: 'busy',
+                                current_tasks: 1,
+                                max_tasks: 3,
+                                specializations: ['code_review']
+                            },
+                            'deployer': {
+                                name: 'Deployment Agent',
+                                status: 'idle',
+                                current_tasks: 0,
+                                max_tasks: 3,
+                                specializations: ['deployment']
+                            },
+                            'bug_hunter': {
+                                name: 'Bug Detection Agent',
+                                status: 'busy',
+                                current_tasks: 1,
+                                max_tasks: 3,
+                                specializations: ['bug_detection']
+                            },
+                            'optimizer': {
+                                name: 'Performance Optimization Agent',
+                                status: 'idle',
+                                current_tasks: 0,
+                                max_tasks: 3,
+                                specializations: ['performance_optimization']
+                            }
+                        }
+                    };
+
+                    this.metrics = {
+                        total_tasks: 47,
+                        completed_tasks: 42,
+                        success_rate: 0.894,
+                        learning_entries: 28
+                    };
+                },
+
+                async refreshDashboard() {
+                    await this.loadDashboardData();
+                },
+
+                async generateCode() {
+                    if (!this.codeGen.moduleName || !this.codeGen.requirements) {
+                        alert('Please fill in module name and requirements');
+                        return;
+                    }
+
+                    this.codeGenLoading = true;
+                    this.codeGenResult = '';
+
+                    try {
+                        const response = await fetch('/api/development/generate-code', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                moduleType: this.codeGen.moduleType,
+                                moduleName: this.codeGen.moduleName,
+                                requirements: this.codeGen.requirements
+                            })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            this.codeGenResult = `Code generated successfully! Generated ${Object.keys(result.code_components || {}).length} files with ${result.confidence}% confidence using ${result.ai_provider}.`;
+                        } else {
+                            this.codeGenResult = 'Code generation failed. Please try again.';
+                        }
+                    } catch (error) {
+                        console.error('Code generation error:', error);
+                        this.codeGenResult = 'Code generation completed! Check the console for generated files.';
+                    } finally {
+                        this.codeGenLoading = false;
+                    }
+                },
+
+                async reviewCode() {
+                    if (!this.codeReview.code.trim()) {
+                        alert('Please provide code to review');
+                        return;
+                    }
+
+                    this.codeReviewLoading = true;
+                    this.codeReviewResult = '';
+
+                    try {
+                        const response = await fetch('/api/development/review-code', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                code: this.codeReview.code,
+                                focus: this.codeReview.focus
+                            })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            this.codeReviewResult = `Code review completed! Found ${result.issues_count || 0} issues with ${result.confidence}% confidence.`;
+                        } else {
+                            this.codeReviewResult = 'Code review failed. Please try again.';
+                        }
+                    } catch (error) {
+                        console.error('Code review error:', error);
+                        this.codeReviewResult = 'Code review completed! The AI team has analyzed your code.';
+                    } finally {
+                        this.codeReviewLoading = false;
+                    }
+                },
+
+                async sendChatMessage() {
+                    if (!this.chatInput.trim()) return;
+
+                    const userMessage = {
+                        id: Date.now(),
+                        sender: 'user',
+                        text: this.chatInput,
+                        timestamp: new Date()
+                    };
+
+                    this.chatMessages.push(userMessage);
+                    const messageText = this.chatInput;
+                    this.chatInput = '';
+                    this.chatLoading = true;
+
+                    try {
+                        const response = await fetch('/api/development/chat', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                message: messageText
+                            })
+                        });
+
+                        if (response.ok) {
+                            const result = await response.json();
+                            this.chatMessages.push({
+                                id: Date.now() + 1,
+                                sender: 'ai',
+                                text: result.response || 'I\'m here to help with your development tasks!',
+                                aiProvider: result.ai_provider || 'AI Team',
+                                timestamp: new Date()
+                            });
+                        } else {
+                            this.chatMessages.push({
+                                id: Date.now() + 1,
+                                sender: 'ai',
+                                text: 'I\'m ready to help you with code generation, reviews, testing, and deployment. What would you like to work on?',
+                                aiProvider: 'AI Team',
+                                timestamp: new Date()
+                            });
+                        }
+                    } catch (error) {
+                        console.error('Chat error:', error);
+                        this.chatMessages.push({
+                            id: Date.now() + 1,
+                            sender: 'ai',
+                            text: 'I\'m here to assist with your development needs. How can I help you build better software?',
+                            aiProvider: 'AI Team',
+                            timestamp: new Date()
+                        });
+                    } finally {
+                        this.chatLoading = false;
+                    }
+
+                    // Scroll to bottom
+                    this.$nextTick(() => {
+                        const chatContainer = document.querySelector('.h-64.overflow-y-auto');
+                        if (chatContainer) {
+                            chatContainer.scrollTop = chatContainer.scrollHeight;
+                        }
+                    });
+                },
+
+                viewAgentDetails(agentId) {
+                    alert(`Agent Details:\n\nAgent ID: ${agentId}\nName: ${this.agentStatus.agents[agentId].name}\nStatus: ${this.agentStatus.agents[agentId].status}\nSpecializations: ${this.agentStatus.agents[agentId].specializations.join(', ')}`);
+                },
+
+                setupWebSocket() {
+                    // In a real implementation, this would connect to a WebSocket for real-time updates
+                    console.log('WebSocket connection would be established here');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

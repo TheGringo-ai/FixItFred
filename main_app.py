@@ -46,6 +46,7 @@ try:
     # Import real API endpoints
     from api.real_manufacturing_api import router as manufacturing_router
     from api.real_logistics_api import router as logistics_router
+    from api.development_api import router as development_router
 
     MODULES_AVAILABLE = True
     print("✅ All enhanced modules loaded successfully")
@@ -97,6 +98,7 @@ else:
 if MODULES_AVAILABLE:
     app.include_router(manufacturing_router)
     app.include_router(logistics_router)
+    app.include_router(development_router)
 
 
 # Request models
@@ -228,6 +230,12 @@ async def home():
                         <h3 class="font-bold text-lg mb-2">Logistics</h3>
                         <p class="text-gray-600 text-sm">Fleet management, route optimization</p>
                     </div>
+
+                    <div class="border border-indigo-200 rounded-lg p-6 hover:shadow-lg transition-shadow cursor-pointer" onclick="testIndustry('development')">
+                        <div class="text-4xl mb-3">🤖</div>
+                        <h3 class="font-bold text-lg mb-2">AI Development</h3>
+                        <p class="text-gray-600 text-sm">Code generation, testing, deployment automation</p>
+                    </div>
                 </div>
             </div>
 
@@ -327,6 +335,8 @@ async def home():
                     window.location.href = '/dashboard/retail/real';
                 } else if (industry === 'construction') {
                     window.location.href = '/dashboard/construction/real';
+                } else if (industry === 'development') {
+                    window.location.href = '/dashboard/development';
                 } else {
                     // Fallback for unknown industries
                     alert(`${industry.toUpperCase()} Interactive Dashboard:\\n\\nReal interactive dashboard coming soon!\\nFeatures:\\n✅ Live Equipment Management\\n✅ Real AI Chat\\n✅ Interactive Forms\\n✅ Real-time Monitoring`);
@@ -750,6 +760,32 @@ async def real_construction_dashboard():
         <html><body>
         <h1>Real Construction Dashboard Loading...</h1>
         <p>Interactive construction dashboard is being prepared.</p>
+        <script>setTimeout(() => location.reload(), 2000);</script>
+        </body></html>
+        """,
+            status_code=200,
+        )
+
+
+@app.get("/dashboard/development", response_class=HTMLResponse)
+async def ai_development_dashboard():
+    """AI Development Enhancement Dashboard"""
+    dashboard_path = (
+        Path(__file__).parent
+        / "ui"
+        / "web"
+        / "templates"
+        / "ai_development_dashboard.html"
+    )
+    if dashboard_path.exists():
+        with open(dashboard_path, "r") as f:
+            return f.read()
+    else:
+        return HTMLResponse(
+            """
+        <html><body>
+        <h1>AI Development Dashboard Loading...</h1>
+        <p>AI-powered development enhancement dashboard is being prepared.</p>
         <script>setTimeout(() => location.reload(), 2000);</script>
         </body></html>
         """,
